@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""Create a new Markdown harness case skeleton from a topic.
+
+This is intentionally conservative: it only creates local Markdown files under
+`cases/active/` and does not invoke models, Hermes, APIs, or external tasks.
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+from datetime import date
+from pathlib import Path
+
+
+VALID_RISK = {"low", "medium", "high", "critical"}
+
+
+def slugify(value: str) -> str:
+    value = value.lower()
+    value = re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "-", value)
+    value = re.sub(r"-+", "-", value).strip("-")
+    if not value:
+        return "case"
+    # Keep paths readable without overfitting Chinese tokenization.
+    return value[:48].strip("-") or "case"
+
+
+def bool_text(value: bool) -> str:
+    return "true" if value else "false"
+
+
+def create_case(
+    topic: str,
+    case_type: str,
+    risk_tier: str,
+    needs_execution: bool,
+    cases_root: Path,
+    slug: str | None,
+) -> Path:
+    if risk_tier not in VALID_RISK:
+        raise ValueError(f"risk_tier must be one of: {', '.join(sorted(VALID_RISK))}")
+
+    case_slug = slugify(slug or topic)
+    case_id = f"CASE-{date.today().strftime('%Y%m%d')}-{case_slug}"
+    case_dir = cases_root / case_id
+    if case_dir.exists():
+        raise FileExistsError(f"case already exists: {case_dir}")
+
+    (case_dir / "artifacts" / "team_blocks").mkdir(parents=True)
+    (case_dir / "inputs").mkdir()
+    (case_dir / "outputs").mkdir()
+
+    human_gate = needs_execution or risk_tier in {"high", "critical"}
+    cac_required = risk_tier in {"high", "critical"}
+
+    write_text(
+        case_dir / "00_owner_intent.md",
+        f"""---
+case_id: {case_id}
+recorded_at: {date.today().isoformat()}
+---
+
+# Owner Intent（原始意图）
+
+## 用户原话（优先逐字）
+
+> {topic}
+
+## 上下文（可选）
+
+- 
+
+## Orchestrator 理解（非结论）
+
+- 用户似乎在问：
+- 明确不属于本案的：
+""",
+    )
+
+    write_text(
+        case_dir / "01_case_intake.md",
+        f"""---
+case_id: {case_id}
+status: draft
+case_type: {case_type}
+risk_tier: {risk_tier}
+topic: "{topic}"
+owner_intent_ref: 00_owner_intent.md
+
+needs_execution: {bool_text(needs_execution)}
+execution_authorized: false
+authorized_phase: null
+human_approval_required: {bool_text(human_gate)}
+
+court_verdict_tier: null
+cac_required: {bool_text(cac_required)}
+cac_exempt_reason: null
+---
+
+# Case Intake
+
+## 案件摘要
+
+（Orchestrator 填写：一句话问题陈述）
+
+## 成功标准
+
+- 
+
+## 约束与时间预算
+
+- 
+
+## 输入清单
+
+| 文件 | 说明 |
+|------|------|
+| | |
+
+## 不适用说明
+
+（本案件明确不做什么）
+""",
+    )
+
+    write_text(
+        case_dir / "CASE_TODO.md",
+        f"""# {case_id} 下一步
+
+1. 运行 `python3 scripts/suggest_teams.py {case_dir}`，填写 `02_team_selection.md`。
+2. 运行 `python3 scripts/suggest_modes.py {case_dir}`，填写 `02b_mode_selection.md`。
+3. 按 `engine/ORCHESTRATOR_RUNBOOK.md` 继续 03–12。
+4. 结案前运行 `python3 scripts/validate_case.py {case_dir}`。
+""",
+    )
+
+    return case_dir
+
+
+def write_text(path: Path, content: str) -> None:
+    path.write_text(content, encoding="utf-8")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Create a new harness case skeleton.")
+    parser.add_argument("topic", help="Raw owner topic or intent")
+    parser.add_argument("--case-type", default="career_direction")
+    parser.add_argument("--risk-tier", default="medium", choices=sorted(VALID_RISK))
+    parser.add_argument("--needs-execution", action="store_true")
+    parser.add_argument("--cases-root", default="cases/active")
+    parser.add_argument("--slug", help="Optional path-safe case slug")
+    args = parser.parse_args()
+
+    case_dir = create_case(
+        topic=args.topic,
+        case_type=args.case_type,
+        risk_tier=args.risk_tier,
+        needs_execution=args.needs_execution,
+        cases_root=Path(args.cases_root),
+        slug=args.slug,
+    )
+    print(case_dir)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

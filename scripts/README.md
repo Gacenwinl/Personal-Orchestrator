@@ -1,5 +1,17 @@
 # Scripts
 
+## new_case.py
+
+从一个 topic 创建本地 Markdown 案件骨架，只写入 `cases/active/`，不调用模型、API、Hermes 或外部任务。
+
+用法：
+
+```bash
+python3 scripts/new_case.py "是否主攻 MEMS/封装/仿真方向？" --case-type career_direction --risk-tier high --needs-execution
+```
+
+输出新 case 目录路径。随后继续运行 `suggest_teams.py` 与 `suggest_modes.py`。
+
 ## validate_case.py
 
 校验单个 case 目录是否满足 Harness 的机械规则：

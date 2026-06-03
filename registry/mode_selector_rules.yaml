@@ -23,6 +23,15 @@ rules:
       - risk_priority_matrix
       - jury_panel
   - when:
+      case_type: automation_design
+    modes:
+      - dynamic_assembly
+      - sequential_review
+      - risk_priority_matrix
+      - execution_handoff_review
+      - jury_panel
+    require_team: execution_handoff
+  - when:
       pre_execution: true
     add_modes:
       - execution_handoff_review

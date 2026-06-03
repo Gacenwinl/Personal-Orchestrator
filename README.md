@@ -22,7 +22,7 @@
 
 1. 读 [engine/ORCHESTRATOR_RUNBOOK.md](engine/ORCHESTRATOR_RUNBOOK.md)
 2. 对照金样例 [cases/samples/CASE-001-mems-career-direction/](cases/samples/CASE-001-mems-career-direction/)
-3. 复制 `templates/` 到新目录 `cases/active/CASE-xxx/`，从 `01_case_intake.md` 开始逐步填写
+3. 用 `python3 scripts/new_case.py "你的 topic" --case-type career_direction --risk-tier high --needs-execution` 创建 `cases/active/CASE-xxx`
 4. 可用 `python3 scripts/suggest_teams.py cases/active/CASE-xxx` 辅助生成 `02_team_selection.md`
 5. 可用 `python3 scripts/suggest_modes.py cases/active/CASE-xxx` 辅助生成 `02b_mode_selection.md`
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
