@@ -47,6 +47,12 @@
 - 修改 Hermes / OpenClaw 源码
 - 自动执行外部任务（爬取、投递、删文件等）
 
+## 本地回归
+
+```bash
+python3 scripts/smoke_test.py
+```
+
 ## 与 OpenClaw_Workspace 的关系
 
 本仓库**独立**。求职执行仍走 `~/OpenClaw_Workspace/hermes`；本 Harness 产出 `09_executor_instruction.md` 后由你审批，再**手工**交给 Hermes（见 [integrations/hermes_handoff.md](integrations/hermes_handoff.md)）。

@@ -1,5 +1,13 @@
 # Scripts
 
+## smoke_test.py
+
+一键本地回归：验证 CASE-001、运行团队/模式建议、编译脚本、在临时目录创建 `--prepare` case 并检查关键文件。
+
+```bash
+python3 scripts/smoke_test.py
+```
+
 ## new_case.py
 
 从一个 topic 创建本地 Markdown 案件骨架，只写入 `cases/active/`，不调用模型、API、Hermes 或外部任务。
