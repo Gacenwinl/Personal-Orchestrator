@@ -8,6 +8,14 @@
 python3 scripts/smoke_test.py
 ```
 
+## case_status.py
+
+查看单个 case 的可审计链路进度、缺失文件和下一步建议。
+
+```bash
+python3 scripts/case_status.py cases/samples/CASE-001-mems-career-direction
+```
+
 ## new_case.py
 
 从一个 topic 创建本地 Markdown 案件骨架，只写入 `cases/active/`，不调用模型、API、Hermes 或外部任务。

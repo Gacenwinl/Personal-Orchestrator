@@ -56,6 +56,14 @@ python3 scripts/suggest_modes.py cases/active/CASE-xxx --write --force
 
 ## 4. 结案前校验
 
+查看当前缺什么：
+
+```bash
+python3 scripts/case_status.py cases/active/CASE-xxx
+```
+
+机械校验：
+
 ```bash
 python3 scripts/validate_case.py cases/active/CASE-xxx
 ```

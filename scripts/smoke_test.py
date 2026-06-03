@@ -46,12 +46,20 @@ def main() -> int:
     run(
         [
             python,
+            "scripts/case_status.py",
+            "cases/samples/CASE-001-mems-career-direction",
+        ]
+    )
+    run(
+        [
+            python,
             "-m",
             "py_compile",
             "scripts/validate_case.py",
             "scripts/suggest_teams.py",
             "scripts/suggest_modes.py",
             "scripts/new_case.py",
+            "scripts/case_status.py",
             "scripts/smoke_test.py",
         ]
     )
