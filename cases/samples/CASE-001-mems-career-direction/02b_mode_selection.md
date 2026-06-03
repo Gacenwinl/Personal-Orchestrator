@@ -1,6 +1,8 @@
 ---
 case_id: CASE-001-mems-career-direction
 rule_ref: registry/mode_selector_rules.yaml
+generated_by: scripts/suggest_modes.py
+pre_execution: false
 ---
 
 # Mode Selection
@@ -12,21 +14,27 @@ rule_ref: registry/mode_selector_rules.yaml
 3. career_fit_matrix
 4. cross_team_conflict_detector
 5. jury_panel
+6. meta_review
 
 ## 选择理由
 
-- 方向案需多视角并行，再用矩阵收敛 fit。
-- 高风险的 `critical_assumption` 团队在 parallel 后进入 06 专卷（非替代 04 块）。
-- 执行前未跑 `execution_handoff_review`（当时未起草 09）；Phase1 授权后在 09 草案上补审。
+- rule_1: case_type=career_direction, needs_execution=True — 方向案先并行再矩阵收敛
+- rule_2: case_type=career_direction, risk_tier=high
+
+## 模式要求的团队
+
+- critical_assumption
 
 ## 预计时间成本
 
-- 审理约 90 分钟；Phase1 执行约 4–6 小时（Hermes 或等效手工）。
+- TODO: Orchestrator 结合案件复杂度填写。
 
-## 模型分配（Phase 1 手填）
+## 模型分配（工作流测试：见 model_defaults.yaml / WORKFLOW_TEST_MIMO.md）
 
 | 步骤 | vendor | 角色 |
 |------|--------|------|
-| parallel 正方倾向 | anthropic | 战略/叙事 |
-| parallel 结构化 | openai | 矩阵/前提 |
-| jury_panel | anthropic | 综合 |
+| Orchestrator（Cursor） | xiaomi | 立案/调度/验收 |
+| parallel_debate（各 team） | xiaomi | mimo-v2.5-pro — 04 评审块 |
+| jury_panel | xiaomi | mimo-v2.5-pro — 汇总 |
+| critical_assumption | xiaomi | mimo-v2.5-pro — CAC |
+| meta_review（可选） | xiaomi | mimo-v2.5-pro — 工作流测试期同模型 |

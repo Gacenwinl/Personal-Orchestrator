@@ -1,0 +1,24 @@
+# 当前激活的模型配置档（工作流测试期）
+active_profile: workflow_test
+
+profiles:
+  workflow_test:
+    description: 与 OpenClaw/Hermes 一致，用小米 MiMo 单模型跑通 Harness 工作流
+    default_model: xiaomi/mimo-v2.5-pro
+    model_id: mimo-v2.5-pro
+    provider: xiaomi
+    api_base: https://token-plan-cn.xiaomimimo.com/v1
+    api_key_env_primary: XIAOMI_API_KEY
+    api_key_env_fallback: XIAOMI_TOKEN_PLAN_CN_API_KEY
+    openclaw_env_path: ~/.openclaw/.env
+    orchestrator_tool: cursor
+    court_mode: single_vendor
+    notes:
+      - 工作流测试阶段不强制正反方跨厂商，优先跑通 12 步可审计链路
+      - API Key 可与 Hermes 共用：见 OpenClaw_Workspace/hermes/data/.env.example
+      - 不在此仓库保存密钥
+
+  production:
+    description: 后续启用多厂商降偏差（尚未激活）
+    court_mode: multi_vendor
+    cross_vendor_required: true

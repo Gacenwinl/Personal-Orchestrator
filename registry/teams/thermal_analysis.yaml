@@ -16,7 +16,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['无关岗位硬套热仿真']
 recommended_model_profile:
-  vendor: openai
-  role: domain_expert
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - simulation_engineering

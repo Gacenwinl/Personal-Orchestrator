@@ -1,5 +1,7 @@
 # Phase 2 Usage — Local Helpers
 
+**模型（工作流测试）：** 默认 `xiaomi/mimo-v2.5-pro`，见 [WORKFLOW_TEST_MIMO.md](WORKFLOW_TEST_MIMO.md)。
+
 本阶段把第一阶段 Markdown Harness 的部分机械步骤脚本化，但仍保持：
 
 - 不调用外部 API

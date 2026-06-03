@@ -17,8 +17,10 @@ scoring_dimensions:
 common_misjudgments:
   - ['漏掉翻转前提']
 recommended_model_profile:
-  vendor: openai
-  role: structured_reasoning
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - evidence_audit
   - jury_panel

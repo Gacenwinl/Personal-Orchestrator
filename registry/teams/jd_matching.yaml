@@ -20,8 +20,10 @@ scoring_dimensions:
 common_misjudgments:
   - ['关键词命中但职责不符']
 recommended_model_profile:
-  vendor: openai
-  role: structured_review
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - resume_packaging
   - hr_screening

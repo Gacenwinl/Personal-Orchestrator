@@ -30,6 +30,8 @@
 
 更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。
 
+**工作流测试模型（当前默认）：** 小米 `xiaomi/mimo-v2.5-pro`，与 OpenClaw/Hermes 一致 → [docs/WORKFLOW_TEST_MIMO.md](docs/WORKFLOW_TEST_MIMO.md)。
+
 ## 目录
 
 - `constraints/` — 硬约束（Harness Engine）

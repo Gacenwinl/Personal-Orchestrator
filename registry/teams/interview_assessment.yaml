@@ -17,7 +17,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['只背八股不结合项目']
 recommended_model_profile:
-  vendor: anthropic
-  role: interview_coach
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - technical_depth

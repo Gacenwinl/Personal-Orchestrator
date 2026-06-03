@@ -15,7 +15,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['把测试经历说成研发主导']
 recommended_model_profile:
-  vendor: openai
-  role: domain_expert
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - technical_depth

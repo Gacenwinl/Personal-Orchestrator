@@ -15,7 +15,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['Executor 直写长期记忆']
 recommended_model_profile:
-  vendor: anthropic
-  role: policy
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - agent_safety

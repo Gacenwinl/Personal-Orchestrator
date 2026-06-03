@@ -16,7 +16,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['封装岗量假设未验证']
 recommended_model_profile:
-  vendor: anthropic
-  role: domain_expert
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - market_reality

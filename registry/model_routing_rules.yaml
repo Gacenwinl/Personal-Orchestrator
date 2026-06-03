@@ -1,12 +1,52 @@
-# Phase 1: 规则 + 手填；不调用 API
-principles:
-  - pro_and_con_should_use_different_vendors
-  - meta_review_uses_vendor_not_in_first_round
-  - evidence_audit_prefers_structured_fact_check_vendor
-  - jury_panel_prefers_stable_synthesis_vendor
-  - high_risk_requires_two_vendor_review_minimum
+# 模型路由规则
+# 工作流测试期：见 model_defaults.yaml（active_profile: workflow_test）
 
-assignments_by_role:
+active_profile_ref: registry/model_defaults.yaml
+
+principles:
+  workflow_test:
+    - 与 OpenClaw/Hermes 一致，默认 xiaomi/mimo-v2.5-pro
+    - Orchestrator（Cursor）与 Expert Court 可先同一模型跑通链路
+    - verdict 仍不等于 execution_authorized
+  production:
+    - pro_and_con_should_use_different_vendors
+    - meta_review_uses_vendor_not_in_first_round
+    - evidence_audit_prefers_structured_fact_check_vendor
+    - jury_panel_prefers_stable_synthesis_vendor
+    - high_risk_requires_two_vendor_review_minimum
+
+# 工作流测试（当前默认）
+workflow_test_assignments:
+  orchestrator:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+    note: Cursor 主会话 / Orchestrator
+  parallel_debate_teams:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+    note: 各 team 04 块（可同模型不同 prompt）
+  adversarial_pro:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+  adversarial_con:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+    note: 测试期同模型；正式期换另一厂商
+  meta_review:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+  evidence_audit:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+  jury_panel:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+  critical_assumption:
+    provider: xiaomi
+    model: mimo-v2.5-pro
+
+# 正式多厂商（后续切换 active_profile: production 时参考）
+production_assignments:
   pro_debate: { vendor: anthropic, note: 正方 }
   con_debate: { vendor: openai, note: 反方 }
   meta_review: { vendor: google_or_manual, note: 未参与首轮 }

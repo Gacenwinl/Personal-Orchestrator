@@ -16,7 +16,9 @@ scoring_dimensions:
 common_misjudgments:
   - ['忽视时间成本']
 recommended_model_profile:
-  vendor: openai
-  role: analyst
+  vendor: xiaomi
+  model: mimo-v2.5-pro
+  role: workflow_test
+  api_base: https://token-plan-cn.xiaomimimo.com/v1
 conflicts_with:
   - career_strategy

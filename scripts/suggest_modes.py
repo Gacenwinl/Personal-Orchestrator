@@ -16,6 +16,37 @@ from pathlib import Path
 from typing import Any
 
 
+def load_workflow_model_rows(registry_dir: Path) -> str:
+    """Build 02b model table from registry/model_defaults.yaml (workflow_test)."""
+    defaults_path = registry_dir / "model_defaults.yaml"
+    if not defaults_path.is_file():
+        return "| TODO | TODO | TODO |"
+
+    provider = "xiaomi"
+    model = "mimo-v2.5-pro"
+    for line in defaults_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("provider:"):
+            provider = stripped.split(":", 1)[1].strip()
+        elif stripped.startswith("default_model:"):
+            raw = stripped.split(":", 1)[1].strip()
+            if "/" in raw:
+                provider, model = raw.split("/", 1)
+            else:
+                model = raw
+        elif stripped.startswith("model_id:"):
+            model = stripped.split(":", 1)[1].strip()
+
+    rows = [
+        ("Orchestrator（Cursor）", provider, "立案/调度/验收"),
+        ("parallel_debate（各 team）", provider, f"{model} — 04 评审块"),
+        ("jury_panel", provider, f"{model} — 汇总"),
+        ("critical_assumption", provider, f"{model} — CAC"),
+        ("meta_review（可选）", provider, f"{model} — 工作流测试期同模型"),
+    ]
+    return "\n".join(f"| {step} | {vendor} | {role} |" for step, vendor, role in rows)
+
+
 @dataclass
 class ModeRule:
     index: int
@@ -190,7 +221,15 @@ def suggest(
         print("  - none")
 
     if write:
-        write_mode_selection(case_dir, matched, modes, required_teams, pre_execution, force)
+        write_mode_selection(
+            case_dir,
+            registry_dir,
+            matched,
+            modes,
+            required_teams,
+            pre_execution,
+            force,
+        )
         print(f"\nwrote: {case_dir / '02b_mode_selection.md'}")
 
     return 0
@@ -198,6 +237,7 @@ def suggest(
 
 def write_mode_selection(
     case_dir: Path,
+    registry_dir: Path,
     matched: list[ModeRule],
     modes: list[str],
     required_teams: list[str],
@@ -247,11 +287,11 @@ pre_execution: {str(pre_execution).lower()}
 
 - TODO: Orchestrator 结合案件复杂度填写。
 
-## 模型分配（Phase 1 手填，见 model_routing_rules.yaml）
+## 模型分配（工作流测试：见 model_defaults.yaml / WORKFLOW_TEST_MIMO.md）
 
 | 步骤 | vendor | 角色 |
 |------|--------|------|
-| TODO | TODO | TODO |
+{load_workflow_model_rows(registry_dir)}
 """,
         encoding="utf-8",
     )

@@ -18,8 +18,9 @@ rule_ref: registry/mode_selector_rules.yaml
 
 - 
 
-## 模型分配（Phase 1 手填，见 model_routing_rules.yaml）
+## 模型分配（工作流测试默认 MiMo，见 docs/WORKFLOW_TEST_MIMO.md）
 
 | 步骤 | vendor | 角色 |
 |------|--------|------|
-| | | |
+| Orchestrator | xiaomi | mimo-v2.5-pro |
+| Expert Court teams | xiaomi | mimo-v2.5-pro |
