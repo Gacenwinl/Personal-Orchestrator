@@ -28,6 +28,8 @@
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
 7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 
+更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。
+
 ## 目录
 
 - `constraints/` — 硬约束（Harness Engine）
