@@ -78,9 +78,14 @@ def main() -> int:
             "scripts/scaffold_team_blocks.py",
             "scripts/render_handoff.py",
             "scripts/render_case_dashboard.py",
+            "scripts/case_sop_server.py",
+            "scripts/court_launcher.py",
+            "scripts/lib/case_chain.py",
+            "scripts/lib/dashboard_wizard.py",
             "scripts/smoke_test.py",
         ]
     )
+    run([python, "scripts/case_sop_server.py", "--check"])
 
     with tempfile.TemporaryDirectory() as tmp:
         case_dir = Path(tmp) / f"CASE-{TODAY}-smoke-test"
@@ -152,6 +157,23 @@ def main() -> int:
     text = dash.read_text(encoding="utf-8")
     if "CASE-001-mems-career-direction" not in text:
         raise RuntimeError("dashboard missing case_id")
+    if "panel-wizard" not in text:
+        raise RuntimeError("dashboard missing interactive wizard panel")
+
+    run(
+        [
+            python,
+            "scripts/court_launcher.py",
+            "cases/samples/CASE-001-mems-career-direction",
+            "--force",
+        ]
+    )
+    plan = (
+        ROOT
+        / "cases/samples/CASE-001-mems-career-direction/artifacts/COURT_LAUNCH_PLAN.md"
+    )
+    if not plan.is_file():
+        raise RuntimeError("court launch plan not generated")
 
     print("\nSmoke tests passed.")
     return 0

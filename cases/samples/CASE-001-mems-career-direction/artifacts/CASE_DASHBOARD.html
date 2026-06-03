@@ -146,6 +146,70 @@
       margin-bottom: 12px;
       font-size: 0.9rem;
     }
+    
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .tab-btn.active { border-color: var(--accent); color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn.secondary { background: var(--border); color: var(--text); }
+    .btn.warn { background: var(--warn); color: #111; }
+    .wizard-actions { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+    #cursor-prompt {
+      width: 100%;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .patch-form {
+      display: grid;
+      gap: 10px;
+      max-width: 520px;
+      font-size: 0.85rem;
+    }
+    .patch-form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+    .patch-form label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); }
+    .patch-form input, .patch-form select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+    }
+    .api-log {
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-height: 2em;
+      white-space: pre-wrap;
+    }
+    .muted.ok { color: var(--ok); }
+    .wizard-current { margin-bottom: 12px; }
+
   </style>
 </head>
 <body>
@@ -173,48 +237,228 @@
           <strong>human_approval_required</strong>False
         </div>
       </div>
-      <p class="callout">法庭 verdict ≠ 执行授权。本页为 Markdown 真源的只读视图；更新案件后重新运行 <code>render_case_dashboard.py</code>。</p>
+      <p class="callout">法庭 verdict ≠ 执行授权。交互写回需 <code>make sop-console</code>；否则本页只读。</p>
     </header>
 
-    <section>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-panel="panel-wizard">向导</button>
+      <button type="button" class="tab-btn" data-panel="panel-court">法庭</button>
+      <button type="button" class="tab-btn" data-panel="panel-chain">链路</button>
+      <button type="button" class="tab-btn" data-panel="panel-debate">讨论</button>
+      <button type="button" class="tab-btn" data-panel="panel-teams">专家队</button>
+      <button type="button" class="tab-btn" data-panel="panel-more">更多</button>
+    </div>
+
+    
+    <section id="panel-wizard" class="tab-panel active">
+      <h2>交互向导</h2>
+      <p class="muted" id="sop-status">检测本机 SOP Console…</p>
+      <div class="wizard-current">
+        <span class="badge">当前步：链路完整</span>
+        <code>complete</code> → <a href="../" id="wizard-file-link"></a>
+      </div>
+      <p class="callout">运行 `python3 scripts/validate_case.py &lt;case_dir&gt;`；通过后可考虑 completed。</p>
+      <p class="muted cli-hint">python3 scripts/validate_case.py {case_dir}</p>
+      <div class="wizard-actions">
+        <button type="button" class="btn" id="btn-copy-prompt">复制 Cursor 口令</button>
+        <button type="button" class="btn secondary" id="btn-regenerate">刷新看板</button>
+      </div>
+      <textarea id="cursor-prompt" readonly rows="6">你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。</textarea>
+
+      <h3 style="font-size:0.9rem;margin-top:20px">快速写回（需 SOP Console）</h3>
+      <form id="patch-form" class="patch-form">
+        <label>目标 <select name="patch_target"><option value="intake">01 intake</option><option value="decision">07 decision</option></select></label>
+        <label>status <input name="status" placeholder="draft / in_progress …" /></label>
+        <label>needs_execution <select name="needs_execution"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>execution_authorized <select name="execution_authorized"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>authorized_phase <input name="authorized_phase" placeholder="phase1" /></label>
+        <label>human_approval_required <select name="human_approval_required"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>讨论纪要 <input name="debate_minute" placeholder="追加到 03" /></label>
+        <label class="check"><input type="checkbox" name="owner_confirmed" /> Owner 已确认（授权字段必填）</label>
+        <button type="submit" class="btn">PATCH 写回</button>
+      </form>
+      <form id="authorize-form" class="patch-form">
+        <h3 style="font-size:0.9rem">授权闸门</h3>
+        <p class="muted">仅当 Owner 已口头/书面批准时勾选并提交。</p>
+        <label class="check"><input type="checkbox" name="owner_confirmed" required /> Owner 确认授权</label>
+        <label>authorized_phase <input name="authorized_phase" value="phase1" /></label>
+        <button type="submit" class="btn warn">authorize（写 01+07）</button>
+      </form>
+      <pre id="api-log" class="api-log"></pre>
+    </section>
+
+    <section id="panel-court" class="tab-panel">
+      <h2>法庭启动器</h2>
+      <p class="muted">每队单独 Cursor Session。生成：<code>make court-launch CASE=…</code></p>
+      <table><thead><tr><th>team_id</th><th>block</th><th>status</th></tr></thead>
+      <tbody><tr><td>career_strategy</td><td><code>artifacts/team_blocks/career_strategy.md</code></td><td>—</td></tr><tr><td>market_reality</td><td><code>artifacts/team_blocks/market_reality.md</code></td><td>—</td></tr><tr><td>jd_matching</td><td><code>artifacts/team_blocks/jd_matching.md</code></td><td>—</td></tr><tr><td>resume_packaging</td><td><code>artifacts/team_blocks/resume_packaging.md</code></td><td>—</td></tr><tr><td>simulation_engineering</td><td><code>artifacts/team_blocks/simulation_engineering.md</code></td><td>—</td></tr><tr><td>evidence_audit</td><td><code>artifacts/team_blocks/evidence_audit.md</code></td><td>—</td></tr><tr><td>critical_assumption</td><td><code>artifacts/team_blocks/critical_assumption.md</code></td><td>—</td></tr><tr><td>jury_panel</td><td><code>artifacts/team_blocks/jury_panel.md</code></td><td>—</td></tr><tr><td>thermal_analysis</td><td><code>artifacts/team_blocks/thermal_analysis.md</code></td><td>—</td></tr><tr><td>electromagnetic_analysis</td><td><code>artifacts/team_blocks/electromagnetic_analysis.md</code></td><td>—</td></tr><tr><td>ai_workflow</td><td><code>artifacts/team_blocks/ai_workflow.md</code></td><td>—</td></tr><tr><td>interview_assessment</td><td><code>artifacts/team_blocks/interview_assessment.md</code></td><td>—</td></tr><tr><td>chip_packaging</td><td><code>artifacts/team_blocks/chip_packaging.md</code></td><td>—</td></tr></tbody></table>
+      <p><a href="../artifacts/COURT_LAUNCH_PLAN.md">COURT_LAUNCH_PLAN.md</a></p>
+    </section>
+
+
+    <section id="panel-chain" class="tab-panel">
       <h2>可审计链路</h2>
-      <p class="progress">13 / 13 步就绪</p>
+      <p class="progress">13 / 13 步就绪 · 运行 `python3 scripts/validate_case.py &lt;case_dir&gt;`；通过后可考虑 completed。</p>
       <div class="steps"><div class="step ok"><span class="mark">✓</span><a href="../00_owner_intent.md">原始意图</a><code>00_owner_intent.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../01_case_intake.md">案件定义</a><code>01_case_intake.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02_team_selection.md">团队选择理由</a><code>02_team_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02b_mode_selection.md">模式选择理由</a><code>02b_mode_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../03_debate_session.md">辩论记录</a><code>03_debate_session.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../05_court_summary.md">汇总 verdict</a><code>05_court_summary.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../06_critical_assumption_check.md">关键前提检查</a><code>06_critical_assumption_check.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../07_orchestrator_decision.md">Orchestrator 决策</a><code>07_orchestrator_decision.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../08_phase_plan.md">Phase 规划</a><code>08_phase_plan.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../09_executor_instruction.md">执行任务书</a><code>09_executor_instruction.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../10_execution_feedback.md">执行反馈</a><code>10_execution_feedback.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../11_acceptance_review.md">验收结果</a><code>11_acceptance_review.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../12_lesson_proposal.md">lesson proposal</a><code>12_lesson_proposal.md</code></div></div>
     </section>
 
-    <section>
+    <section id="panel-debate" class="tab-panel">
       <h2>讨论过程</h2>
-      <p class="muted">真源：<code>03_debate_session.md</code> + <code>artifacts/team_blocks/</code></p>
+      <p class="muted">真源：<code>03_debate_session.md</code></p>
       <h3 style="font-size:0.9rem;color:var(--muted)">冲突摘要</h3>
       <table><thead><tr><th>parallel_debate</th><th>8 teams</th><th>见 artifacts/team_blocks/</th></tr></thead><tbody><tr><td>career_fit_matrix</td><td>jd_matching, resume_packaging, market_reality</td><td>矩阵见下</td></tr><tr><td>cross_team_conflict_detector</td><td>all</td><td>1 条 major：包装 vs 市场</td></tr><tr><td>jury_panel</td><td>jury_panel</td><td>→ 05</td></tr></tbody></table><table><thead><tr><th>封装/先进封装</th><th>中</th><th>中</th><th>高</th><th>低</th></tr></thead><tbody><tr><td>器件/MEMS 工艺</td><td>中-低</td><td>低-中</td><td>高</td><td>低</td></tr><tr><td>CAE/结构仿真</td><td>中-高</td><td>中</td><td>很高</td><td>低</td></tr><tr><td>混合（器件+仿真）</td><td>中</td><td>中</td><td>中</td><td>低</td></tr></tbody></table>
       <h3 style="font-size:0.9rem;color:var(--muted)">讨论纪要</h3>
       <ul><li class='muted'>（无讨论纪要 — 见 templates/03）</li></ul>
     </section>
 
-    <section>
+    <section id="panel-teams" class="tab-panel">
       <h2>专家队评审</h2>
       <div class="teams"><article class="team"><header><h3>career_strategy</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>「仿真+封装」叙事与部分硬件/结构岗相交，适合作为**组合标签**而非窄口径。</li><li>不宜在未验证 JD 池前承诺「主攻」。</li></ul><h4>Conflicts</h4><ul><li>vs resume_packaging：包装可先行的乐观度</li></ul></article><article class="team"><header><h3>critical_assumption</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>见 `06_critical_assumption_check.md` 表 A1–A5。</li></ul><h4>Conflicts</h4><ul><li>无</li></ul></article><article class="team"><header><h3>evidence_audit</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>jd_matching</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>jury_panel</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>market_reality</h3><span class="pill">MODIFY</span></header><p class="muted">confidence: low</p><h4>Findings</h4><ul><li>样例 JD 不足以代表池子；**必须**扩样本到 ≥20 再谈「主攻」。</li></ul><h4>Conflicts</h4><ul><li>vs career_strategy：策略偏乐观，市场偏保守</li></ul></article><article class="team"><header><h3>resume_packaging</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>simulation_engineering</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article></div>
     </section>
 
-    <section>
+    <section id="panel-more" class="tab-panel">
       <h2>关键前提（CAC）</h2>
       <table><thead><tr><th>A1</th><th>目标地域 3 个月内存在 ≥15 条可投「对口」JD</th><th>unknown</th><th>Phase1 收集+分桶</th><th>从 RWM 降为 MODIFY/REJECT 主轴</th></tr></thead><tbody><tr><td>A2</td><td>JD 学历/年限门槛用户可满足 ≥60% 样本</td><td>inference</td><td>逐条标注</td><td>改推相邻岗族</td></tr><tr><td>A3</td><td>简历能在 2 个项目内表达仿真/封装相关交付</td><td>inference</td><td>resume_packaging 对照 JD</td><td>先改简历再谈方向</td></tr><tr><td>A4</td><td>纯仿真岗占比 &lt;40%（否则竞争过激）</td><td>unknown</td><td>分桶统计</td><td>改组合策略</td></tr><tr><td>A5</td><td>存在比「仿真主轴」更优的相邻方向（器件/可靠性）</td><td>unknown</td><td>同事位族对比矩阵</td><td>可能翻转主轴</td></tr></tbody></table>
-    </section>
-
-    <section>
       <h2>分析产出</h2>
       <div class="output"><a href="../outputs/jd_pool_phase1.md"><strong>JD Pool Phase1（金样例 mock 摘要）</strong></a><p>| bucket | count |</p></div>
-    </section>
-
-    <section>
       <h2>下一步</h2>
       <div class="todo">见 CASE_TODO.md</div>
     </section>
 
     <footer>
-      Generated by scripts/render_case_dashboard.py · data embedded for offline use.
+      Generated by scripts/render_case_dashboard.py · Phase 4 interactive SOP
     </footer>
   </div>
-  <script type="application/json" id="case-data">{"case_id": "CASE-001-mems-career-direction", "case_dir": "cases/samples/CASE-001-mems-career-direction", "status": "completed", "topic": "是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集", "case_type": "career_direction", "risk_tier": "high", "court_verdict_tier": "RECOMMENDED_WITH_MODIFICATIONS", "auth": {"needs_execution": true, "execution_authorized": true, "authorized_phase": "phase1", "human_approval_required": false}, "steps": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图", "present": true}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义", "present": true}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由", "present": true}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由", "present": true}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录", "present": true}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict", "present": true}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查", "present": true}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "present": true}, {"key": "phase_plan", "file": "08_phase_plan.md", "label": "Phase 规划", "present": true}, {"key": "instruction", "file": "09_executor_instruction.md", "label": "执行任务书", "present": true}, {"key": "feedback", "file": "10_execution_feedback.md", "label": "执行反馈", "present": true}, {"key": "acceptance", "file": "11_acceptance_review.md", "label": "验收结果", "present": true}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal", "present": true}], "debate": {"modes": [], "minutes": [], "conflict_tables": [[["parallel_debate", "8 teams", "见 artifacts/team_blocks/"], ["career_fit_matrix", "jd_matching, resume_packaging, market_reality", "矩阵见下"], ["cross_team_conflict_detector", "all", "1 条 major：包装 vs 市场"], ["jury_panel", "jury_panel", "→ 05"]], [["封装/先进封装", "中", "中", "高", "低"], ["器件/MEMS 工艺", "中-低", "低-中", "高", "低"], ["CAE/结构仿真", "中-高", "中", "很高", "低"], ["混合（器件+仿真）", "中", "中", "中", "低"]]], "focus": ""}, "cac_tables": [[["A1", "目标地域 3 个月内存在 ≥15 条可投「对口」JD", "unknown", "Phase1 收集+分桶", "从 RWM 降为 MODIFY/REJECT 主轴"], ["A2", "JD 学历/年限门槛用户可满足 ≥60% 样本", "inference", "逐条标注", "改推相邻岗族"], ["A3", "简历能在 2 个项目内表达仿真/封装相关交付", "inference", "resume_packaging 对照 JD", "先改简历再谈方向"], ["A4", "纯仿真岗占比 <40%（否则竞争过激）", "unknown", "分桶统计", "改组合策略"], ["A5", "存在比「仿真主轴」更优的相邻方向（器件/可靠性）", "unknown", "同事位族对比矩阵", "可能翻转主轴"]]], "teams": [{"team_id": "career_strategy", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["「仿真+封装」叙事与部分硬件/结构岗相交，适合作为**组合标签**而非窄口径。", "不宜在未验证 JD 池前承诺「主攻」。"], "conflicts": ["vs resume_packaging：包装可先行的乐观度"], "path": "team_blocks/career_strategy.md"}, {"team_id": "critical_assumption", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["见 `06_critical_assumption_check.md` 表 A1–A5。"], "conflicts": ["无"], "path": "team_blocks/critical_assumption.md"}, {"team_id": "evidence_audit", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/evidence_audit.md"}, {"team_id": "jd_matching", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jd_matching.md"}, {"team_id": "jury_panel", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jury_panel.md"}, {"team_id": "market_reality", "tier": "MODIFY", "confidence": "low", "findings": ["样例 JD 不足以代表池子；**必须**扩样本到 ≥20 再谈「主攻」。"], "conflicts": ["vs career_strategy：策略偏乐观，市场偏保守"], "path": "team_blocks/market_reality.md"}, {"team_id": "resume_packaging", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/resume_packaging.md"}, {"team_id": "simulation_engineering", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/simulation_engineering.md"}], "outputs": [{"name": "jd_pool_phase1.md", "title": "JD Pool Phase1（金样例 mock 摘要）", "summary": "| bucket | count |", "path": "../outputs/jd_pool_phase1.md"}], "todo": "", "files": [{"rel": "00_owner_intent.md", "label": "原始意图", "href": "../00_owner_intent.md"}, {"rel": "01_case_intake.md", "label": "案件定义", "href": "../01_case_intake.md"}, {"rel": "02_team_selection.md", "label": "团队选择理由", "href": "../02_team_selection.md"}, {"rel": "02b_mode_selection.md", "label": "模式选择理由", "href": "../02b_mode_selection.md"}, {"rel": "03_debate_session.md", "label": "辩论记录", "href": "../03_debate_session.md"}, {"rel": "05_court_summary.md", "label": "汇总 verdict", "href": "../05_court_summary.md"}, {"rel": "06_critical_assumption_check.md", "label": "关键前提检查", "href": "../06_critical_assumption_check.md"}, {"rel": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "href": "../07_orchestrator_decision.md"}, {"rel": "08_phase_plan.md", "label": "Phase 规划", "href": "../08_phase_plan.md"}, {"rel": "09_executor_instruction.md", "label": "执行任务书", "href": "../09_executor_instruction.md"}, {"rel": "10_execution_feedback.md", "label": "执行反馈", "href": "../10_execution_feedback.md"}, {"rel": "11_acceptance_review.md", "label": "验收结果", "href": "../11_acceptance_review.md"}, {"rel": "12_lesson_proposal.md", "label": "lesson proposal", "href": "../12_lesson_proposal.md"}]}</script>
+  <script type="application/json" id="case-data">{"case_id": "CASE-001-mems-career-direction", "case_dir": "cases/samples/CASE-001-mems-career-direction", "status": "completed", "topic": "是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集", "case_type": "career_direction", "risk_tier": "high", "court_verdict_tier": "RECOMMENDED_WITH_MODIFICATIONS", "auth": {"needs_execution": true, "execution_authorized": true, "authorized_phase": "phase1", "human_approval_required": false}, "steps": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图", "present": true}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义", "present": true}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由", "present": true}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由", "present": true}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录", "present": true}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict", "present": true}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查", "present": true}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "present": true}, {"key": "phase_plan", "file": "08_phase_plan.md", "label": "Phase 规划", "present": true}, {"key": "instruction", "file": "09_executor_instruction.md", "label": "执行任务书", "present": true}, {"key": "feedback", "file": "10_execution_feedback.md", "label": "执行反馈", "present": true}, {"key": "acceptance", "file": "11_acceptance_review.md", "label": "验收结果", "present": true}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal", "present": true}], "wizard": {"case_dir": "cases/samples/CASE-001-mems-career-direction", "case_dir_abs": "/Users/openclaw/Personal-Orchestrator-Harness/cases/samples/CASE-001-mems-career-direction", "case_id": "CASE-001-mems-career-direction", "status": "completed", "topic": "是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集", "auth": {"needs_execution": true, "execution_authorized": true, "authorized_phase": "phase1", "human_approval_required": false}, "present": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图"}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义"}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由"}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由"}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录"}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict"}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查"}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策"}, {"key": "phase_plan", "file": "08_phase_plan.md", "label": "Phase 规划"}, {"key": "instruction", "file": "09_executor_instruction.md", "label": "执行任务书"}, {"key": "feedback", "file": "10_execution_feedback.md", "label": "执行反馈"}, {"key": "acceptance", "file": "11_acceptance_review.md", "label": "验收结果"}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal"}], "missing": [], "current_step": {"key": "complete", "file": "", "label": "链路完整"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "cursor_prompt": "你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。", "court_teams": ["career_strategy", "market_reality", "jd_matching", "resume_packaging", "simulation_engineering", "evidence_audit", "critical_assumption", "jury_panel", "thermal_analysis", "electromagnetic_analysis", "ai_workflow", "interview_assessment", "chip_packaging"], "court_plan": [], "cli_hint": "python3 scripts/validate_case.py {case_dir}"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "debate": {"modes": [], "minutes": [], "conflict_tables": [[["parallel_debate", "8 teams", "见 artifacts/team_blocks/"], ["career_fit_matrix", "jd_matching, resume_packaging, market_reality", "矩阵见下"], ["cross_team_conflict_detector", "all", "1 条 major：包装 vs 市场"], ["jury_panel", "jury_panel", "→ 05"]], [["封装/先进封装", "中", "中", "高", "低"], ["器件/MEMS 工艺", "中-低", "低-中", "高", "低"], ["CAE/结构仿真", "中-高", "中", "很高", "低"], ["混合（器件+仿真）", "中", "中", "中", "低"]]], "focus": ""}, "cac_tables": [[["A1", "目标地域 3 个月内存在 ≥15 条可投「对口」JD", "unknown", "Phase1 收集+分桶", "从 RWM 降为 MODIFY/REJECT 主轴"], ["A2", "JD 学历/年限门槛用户可满足 ≥60% 样本", "inference", "逐条标注", "改推相邻岗族"], ["A3", "简历能在 2 个项目内表达仿真/封装相关交付", "inference", "resume_packaging 对照 JD", "先改简历再谈方向"], ["A4", "纯仿真岗占比 <40%（否则竞争过激）", "unknown", "分桶统计", "改组合策略"], ["A5", "存在比「仿真主轴」更优的相邻方向（器件/可靠性）", "unknown", "同事位族对比矩阵", "可能翻转主轴"]]], "teams": [{"team_id": "career_strategy", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["「仿真+封装」叙事与部分硬件/结构岗相交，适合作为**组合标签**而非窄口径。", "不宜在未验证 JD 池前承诺「主攻」。"], "conflicts": ["vs resume_packaging：包装可先行的乐观度"], "path": "team_blocks/career_strategy.md"}, {"team_id": "critical_assumption", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["见 `06_critical_assumption_check.md` 表 A1–A5。"], "conflicts": ["无"], "path": "team_blocks/critical_assumption.md"}, {"team_id": "evidence_audit", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/evidence_audit.md"}, {"team_id": "jd_matching", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jd_matching.md"}, {"team_id": "jury_panel", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jury_panel.md"}, {"team_id": "market_reality", "tier": "MODIFY", "confidence": "low", "findings": ["样例 JD 不足以代表池子；**必须**扩样本到 ≥20 再谈「主攻」。"], "conflicts": ["vs career_strategy：策略偏乐观，市场偏保守"], "path": "team_blocks/market_reality.md"}, {"team_id": "resume_packaging", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/resume_packaging.md"}, {"team_id": "simulation_engineering", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/simulation_engineering.md"}], "outputs": [{"name": "jd_pool_phase1.md", "title": "JD Pool Phase1（金样例 mock 摘要）", "summary": "| bucket | count |", "path": "../outputs/jd_pool_phase1.md"}], "todo": "", "has_missing": false, "files": [{"rel": "00_owner_intent.md", "label": "原始意图", "href": "../00_owner_intent.md"}, {"rel": "01_case_intake.md", "label": "案件定义", "href": "../01_case_intake.md"}, {"rel": "02_team_selection.md", "label": "团队选择理由", "href": "../02_team_selection.md"}, {"rel": "02b_mode_selection.md", "label": "模式选择理由", "href": "../02b_mode_selection.md"}, {"rel": "03_debate_session.md", "label": "辩论记录", "href": "../03_debate_session.md"}, {"rel": "05_court_summary.md", "label": "汇总 verdict", "href": "../05_court_summary.md"}, {"rel": "06_critical_assumption_check.md", "label": "关键前提检查", "href": "../06_critical_assumption_check.md"}, {"rel": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "href": "../07_orchestrator_decision.md"}, {"rel": "08_phase_plan.md", "label": "Phase 规划", "href": "../08_phase_plan.md"}, {"rel": "09_executor_instruction.md", "label": "执行任务书", "href": "../09_executor_instruction.md"}, {"rel": "10_execution_feedback.md", "label": "执行反馈", "href": "../10_execution_feedback.md"}, {"rel": "11_acceptance_review.md", "label": "验收结果", "href": "../11_acceptance_review.md"}, {"rel": "12_lesson_proposal.md", "label": "lesson proposal", "href": "../12_lesson_proposal.md"}]}</script>
+  
+<script>
+(function() {
+  const SOP_API = "http://127.0.0.1:8765";
+  const BOOT = {"case_dir": "cases/samples/CASE-001-mems-career-direction", "wizard": {"case_dir": "cases/samples/CASE-001-mems-career-direction", "case_dir_abs": "/Users/openclaw/Personal-Orchestrator-Harness/cases/samples/CASE-001-mems-career-direction", "case_id": "CASE-001-mems-career-direction", "status": "completed", "topic": "是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集", "auth": {"needs_execution": true, "execution_authorized": true, "authorized_phase": "phase1", "human_approval_required": false}, "present": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图"}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义"}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由"}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由"}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录"}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict"}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查"}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策"}, {"key": "phase_plan", "file": "08_phase_plan.md", "label": "Phase 规划"}, {"key": "instruction", "file": "09_executor_instruction.md", "label": "执行任务书"}, {"key": "feedback", "file": "10_execution_feedback.md", "label": "执行反馈"}, {"key": "acceptance", "file": "11_acceptance_review.md", "label": "验收结果"}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal"}], "missing": [], "current_step": {"key": "complete", "file": "", "label": "链路完整"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "cursor_prompt": "你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。", "court_teams": ["career_strategy", "market_reality", "jd_matching", "resume_packaging", "simulation_engineering", "evidence_audit", "critical_assumption", "jury_panel", "thermal_analysis", "electromagnetic_analysis", "ai_workflow", "interview_assessment", "chip_packaging"], "court_plan": [], "cli_hint": "python3 scripts/validate_case.py {case_dir}"}};
+  const logEl = document.getElementById("api-log");
+  const statusEl = document.getElementById("sop-status");
+  const promptEl = document.getElementById("cursor-prompt");
+
+  function log(msg) {
+    if (logEl) logEl.textContent = (logEl.textContent + "\n" + msg).trim();
+  }
+
+  async function api(path, opts) {
+    const res = await fetch(SOP_API + path, opts);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }
+
+  async function refreshWizard() {
+    try {
+      const state = await api("/api/case?path=" + encodeURIComponent(BOOT.case_dir));
+      statusEl.textContent = "SOP Console 已连接";
+      statusEl.className = "muted ok";
+      if (state.cursor_prompt) promptEl.value = state.cursor_prompt;
+      const step = state.current_step || {};
+      const link = document.getElementById("wizard-file-link");
+      if (link && step.file) {
+        link.href = "../" + step.file;
+        link.textContent = step.file;
+      }
+    } catch (e) {
+      statusEl.textContent = "只读模式（未启动 make sop-console）";
+      statusEl.className = "muted";
+    }
+  }
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.panel).classList.add("active");
+    });
+  });
+
+  document.getElementById("btn-copy-prompt").addEventListener("click", () => {
+    navigator.clipboard.writeText(promptEl.value).then(() => log("已复制口令"));
+  });
+
+  document.getElementById("btn-regenerate").addEventListener("click", async () => {
+    try {
+      await api("/api/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: BOOT.case_dir }),
+      });
+      log("看板已重生；请刷新浏览器");
+      location.reload();
+    } catch (e) { log("regenerate: " + e.message); }
+  });
+
+  function fieldsFromForm(form) {
+    const fields = {};
+    ["status","authorized_phase"].forEach((k) => {
+      const v = form.elements[k]?.value?.trim();
+      if (v) fields[k] = v;
+    });
+    ["needs_execution","execution_authorized","human_approval_required"].forEach((k) => {
+      const v = form.elements[k]?.value;
+      if (v === "true") fields[k] = true;
+      if (v === "false") fields[k] = false;
+    });
+    return fields;
+  }
+
+  document.getElementById("patch-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const form = ev.target;
+    try {
+      const body = {
+        path: BOOT.case_dir,
+        target: form.patch_target.value,
+        fields: fieldsFromForm(form),
+        owner_confirmed: form.owner_confirmed.checked,
+      };
+      const minute = form.debate_minute.value.trim();
+      if (minute) body.debate_minute = minute;
+      await api("/api/patch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      log("PATCH OK");
+      refreshWizard();
+    } catch (e) { log("PATCH: " + e.message); }
+  });
+
+  document.getElementById("authorize-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const form = ev.target;
+    if (!form.owner_confirmed.checked) {
+      log("authorize: 需要 Owner 确认");
+      return;
+    }
+    try {
+      await api("/api/authorize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: BOOT.case_dir,
+          owner_confirmed: true,
+          fields: {
+            needs_execution: true,
+            execution_authorized: true,
+            authorized_phase: form.authorized_phase.value.trim() || "phase1",
+            human_approval_required: false,
+          },
+        }),
+      });
+      log("authorize OK");
+      refreshWizard();
+    } catch (e) { log("authorize: " + e.message); }
+  });
+
+  refreshWizard();
+})();
+</script>
+
 </body>
 </html>

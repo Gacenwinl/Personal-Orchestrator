@@ -1,0 +1,63 @@
+# SOP wizard step hints (Orchestrator). Placeholders: {case_dir} {case_id} {file}
+
+steps:
+  owner_intent:
+    cli_hint: "记录 Owner 原话，不改写为结论"
+    cursor_prompt: "你是 Orchestrator。读取 {case_dir}/00_owner_intent.md，忠实记录用户原话。不要设置 execution_authorized: true。"
+
+  case_intake:
+    cli_hint: "核对 frontmatter 四字段，默认 execution_authorized: false"
+    cursor_prompt: "你是 Orchestrator。完善 {case_dir}/01_case_intake.md 的摘要与成功标准；保持 execution_authorized: false 除非 Owner 已明确批准。"
+
+  team_selection:
+    cli_hint: "python3 scripts/suggest_teams.py {case_dir} --write 后人工补理由"
+    cursor_prompt: "你是 Orchestrator。完善 {case_dir}/02_team_selection.md：列出选用与未选用团队及理由。可读 registry/team_selector_rules.yaml。"
+
+  mode_selection:
+    cli_hint: "python3 scripts/suggest_modes.py {case_dir} --write"
+    cursor_prompt: "你是 Orchestrator。完善 {case_dir}/02b_mode_selection.md：模式序列、时间成本、模型分配说明。"
+
+  debate_session:
+    cli_hint: "必填冲突表与讨论纪要（5-15 条）"
+    cursor_prompt: "你是 Orchestrator。完善 {case_dir}/03_debate_session.md 与 artifacts/team_blocks/*.md（templates/04）。汇总冲突到 03。禁止授权执行。"
+
+  court_summary:
+    cli_hint: "court_verdict_tier 五档之一；不写执行命令"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/05_court_summary.md。明确 verdict 非执行授权。"
+
+  cac:
+    cli_hint: "每条前提有验证方式与翻转条件"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/06_critical_assumption_check.md（CAC）。"
+
+  decision:
+    cli_hint: "更新 07 与 01 授权四字段一致"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/07_orchestrator_decision.md。仅在 Owner 批准后设 execution_authorized: true。"
+
+  phase_plan:
+    cli_hint: "每 phase 边界清晰"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/08_phase_plan.md。"
+
+  instruction:
+    cli_hint: "09 必含禁止事项、验收标准、停止并回报条件"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/09_executor_instruction.md（仅当已授权）。"
+
+  feedback:
+    cli_hint: "Executor 填 10，Orchestrator 不信其自报"
+    cursor_prompt: "你是 External Executor。仅更新 {case_dir}/10_execution_feedback.md 事实与路径。"
+
+  acceptance:
+    cli_hint: "Orchestrator 独立验收 11"
+    cursor_prompt: "你是 Orchestrator。对照 09 独立撰写 {case_dir}/11_acceptance_review.md。"
+
+  lesson:
+    cli_hint: "12 提案，不直接写 lessons/approved"
+    cursor_prompt: "你是 Orchestrator。撰写 {case_dir}/12_lesson_proposal.md 提案。"
+
+  complete:
+    cli_hint: "python3 scripts/validate_case.py {case_dir}"
+    cursor_prompt: "你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。"
+
+court_invoke_template: |
+  你是 {team_id} 评审队。读 registry/teams/{team_id}.yaml 与 {case_dir}/01_case_intake.md。
+  只填 {case_dir}/artifacts/team_blocks/{team_id}.md（templates/04）。
+  禁止设置 execution_authorized 或写 09。

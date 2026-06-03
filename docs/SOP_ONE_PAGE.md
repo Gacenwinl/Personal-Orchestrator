@@ -31,6 +31,8 @@ flowchart TD
 | 进度 | `python3 scripts/case_status.py cases/active/CASE-xxx` |
 | 校验 | `python3 scripts/validate_case.py cases/active/CASE-xxx` |
 | **案件看板（成品）** | `make dashboard CASE=cases/active/CASE-xxx` |
+| **交互 SOP Console** | `make sop-console`（本机 8765，看板向导写回） |
+| 法庭启动清单 | `make court-launch CASE=cases/active/CASE-xxx` |
 | 打开看板 | 浏览器打开 `cases/.../artifacts/CASE_DASHBOARD.html` |
 | 全部索引 | `make dashboards` → `cases/index.html` |
 | 交接 Hermes | `python3 scripts/render_handoff.py cases/active/CASE-xxx` |
@@ -55,3 +57,4 @@ flowchart TD
 - [ORCHESTRATOR_RUNBOOK.md](../engine/ORCHESTRATOR_RUNBOOK.md)
 - [PHASE2_USAGE.md](PHASE2_USAGE.md)
 - [PHASE3_ARCHITECTURE.md](PHASE3_ARCHITECTURE.md)
+- [PHASE4_INTERACTIVE_SOP.md](PHASE4_INTERACTIVE_SOP.md)

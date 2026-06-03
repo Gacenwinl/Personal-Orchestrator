@@ -146,6 +146,70 @@
       margin-bottom: 12px;
       font-size: 0.9rem;
     }
+    
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .tab-btn.active { border-color: var(--accent); color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn.secondary { background: var(--border); color: var(--text); }
+    .btn.warn { background: var(--warn); color: #111; }
+    .wizard-actions { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+    #cursor-prompt {
+      width: 100%;
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .patch-form {
+      display: grid;
+      gap: 10px;
+      max-width: 520px;
+      font-size: 0.85rem;
+    }
+    .patch-form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+    .patch-form label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--text); }
+    .patch-form input, .patch-form select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+    }
+    .api-log {
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-height: 2em;
+      white-space: pre-wrap;
+    }
+    .muted.ok { color: var(--ok); }
+    .wizard-current { margin-bottom: 12px; }
+
   </style>
 </head>
 <body>
@@ -173,40 +237,90 @@
           <strong>human_approval_required</strong>True
         </div>
       </div>
-      <p class="callout">法庭 verdict ≠ 执行授权。本页为 Markdown 真源的只读视图；更新案件后重新运行 <code>render_case_dashboard.py</code>。</p>
+      <p class="callout">法庭 verdict ≠ 执行授权。交互写回需 <code>make sop-console</code>；否则本页只读。</p>
     </header>
 
-    <section>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-panel="panel-wizard">向导</button>
+      <button type="button" class="tab-btn" data-panel="panel-court">法庭</button>
+      <button type="button" class="tab-btn" data-panel="panel-chain">链路</button>
+      <button type="button" class="tab-btn" data-panel="panel-debate">讨论</button>
+      <button type="button" class="tab-btn" data-panel="panel-teams">专家队</button>
+      <button type="button" class="tab-btn" data-panel="panel-more">更多</button>
+    </div>
+
+    
+    <section id="panel-wizard" class="tab-panel active">
+      <h2>交互向导</h2>
+      <p class="muted" id="sop-status">检测本机 SOP Console…</p>
+      <div class="wizard-current">
+        <span class="badge">当前步：链路完整</span>
+        <code>complete</code> → <a href="../" id="wizard-file-link"></a>
+      </div>
+      <p class="callout">运行 `python3 scripts/validate_case.py &lt;case_dir&gt;`；通过后可考虑 completed。</p>
+      <p class="muted cli-hint">python3 scripts/validate_case.py {case_dir}</p>
+      <div class="wizard-actions">
+        <button type="button" class="btn" id="btn-copy-prompt">复制 Cursor 口令</button>
+        <button type="button" class="btn secondary" id="btn-regenerate">刷新看板</button>
+      </div>
+      <textarea id="cursor-prompt" readonly rows="6">你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。</textarea>
+
+      <h3 style="font-size:0.9rem;margin-top:20px">快速写回（需 SOP Console）</h3>
+      <form id="patch-form" class="patch-form">
+        <label>目标 <select name="patch_target"><option value="intake">01 intake</option><option value="decision">07 decision</option></select></label>
+        <label>status <input name="status" placeholder="draft / in_progress …" /></label>
+        <label>needs_execution <select name="needs_execution"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>execution_authorized <select name="execution_authorized"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>authorized_phase <input name="authorized_phase" placeholder="phase1" /></label>
+        <label>human_approval_required <select name="human_approval_required"><option value="">—</option><option>true</option><option>false</option></select></label>
+        <label>讨论纪要 <input name="debate_minute" placeholder="追加到 03" /></label>
+        <label class="check"><input type="checkbox" name="owner_confirmed" /> Owner 已确认（授权字段必填）</label>
+        <button type="submit" class="btn">PATCH 写回</button>
+      </form>
+      <form id="authorize-form" class="patch-form">
+        <h3 style="font-size:0.9rem">授权闸门</h3>
+        <p class="muted">仅当 Owner 已口头/书面批准时勾选并提交。</p>
+        <label class="check"><input type="checkbox" name="owner_confirmed" required /> Owner 确认授权</label>
+        <label>authorized_phase <input name="authorized_phase" value="" /></label>
+        <button type="submit" class="btn warn">authorize（写 01+07）</button>
+      </form>
+      <pre id="api-log" class="api-log"></pre>
+    </section>
+
+    <section id="panel-court" class="tab-panel">
+      <h2>法庭启动器</h2>
+      <p class="muted">每队单独 Cursor Session。生成：<code>make court-launch CASE=…</code></p>
+      <table><thead><tr><th>team_id</th><th>block</th><th>status</th></tr></thead>
+      <tbody><tr><td>technical_depth</td><td><code>artifacts/team_blocks/technical_depth.md</code></td><td>—</td></tr><tr><td>career_strategy</td><td><code>artifacts/team_blocks/career_strategy.md</code></td><td>—</td></tr><tr><td>evidence_audit</td><td><code>artifacts/team_blocks/evidence_audit.md</code></td><td>—</td></tr><tr><td>critical_assumption</td><td><code>artifacts/team_blocks/critical_assumption.md</code></td><td>—</td></tr><tr><td>risk_control</td><td><code>artifacts/team_blocks/risk_control.md</code></td><td>—</td></tr><tr><td>ai_workflow</td><td><code>artifacts/team_blocks/ai_workflow.md</code></td><td>—</td></tr><tr><td>jury_panel</td><td><code>artifacts/team_blocks/jury_panel.md</code></td><td>—</td></tr></tbody></table>
+      <p><a href="../artifacts/COURT_LAUNCH_PLAN.md">COURT_LAUNCH_PLAN.md</a></p>
+    </section>
+
+
+    <section id="panel-chain" class="tab-panel">
       <h2>可审计链路</h2>
-      <p class="progress">9 / 9 步就绪</p>
+      <p class="progress">9 / 9 步就绪 · 运行 `python3 scripts/validate_case.py &lt;case_dir&gt;`；通过后可考虑 completed。</p>
       <div class="steps"><div class="step ok"><span class="mark">✓</span><a href="../00_owner_intent.md">原始意图</a><code>00_owner_intent.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../01_case_intake.md">案件定义</a><code>01_case_intake.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02_team_selection.md">团队选择理由</a><code>02_team_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02b_mode_selection.md">模式选择理由</a><code>02b_mode_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../03_debate_session.md">辩论记录</a><code>03_debate_session.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../05_court_summary.md">汇总 verdict</a><code>05_court_summary.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../06_critical_assumption_check.md">关键前提检查</a><code>06_critical_assumption_check.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../07_orchestrator_decision.md">Orchestrator 决策</a><code>07_orchestrator_decision.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../12_lesson_proposal.md">lesson proposal</a><code>12_lesson_proposal.md</code></div></div>
     </section>
 
-    <section>
+    <section id="panel-debate" class="tab-panel">
       <h2>讨论过程</h2>
-      <p class="muted">真源：<code>03_debate_session.md</code> + <code>artifacts/team_blocks/</code></p>
+      <p class="muted">真源：<code>03_debate_session.md</code></p>
       <h3 style="font-size:0.9rem;color:var(--muted)">冲突摘要</h3>
       <table><thead><tr><th>technical_feasibility_review</th><th>2026-06-03</th><th>2026-06-03</th><th>technical_depth, ai_workflow</th><th>路径技术可行</th></tr></thead><tbody><tr><td>adversarial_debate</td><td>2026-06-03</td><td>2026-06-03</td><td>career_strategy vs risk_control</td><td>见冲突表</td></tr><tr><td>risk_priority_matrix</td><td>2026-06-03</td><td>2026-06-03</td><td>risk_control, evidence_audit</td><td>时间&gt;院校</td></tr><tr><td>jury_panel</td><td>2026-06-03</td><td>2026-06-03</td><td>jury_panel</td><td>→ RWM</td></tr></tbody></table><table><thead><tr><th>主通道</th><th>美国 funded PhD 网申</th><th>靠华人 AP/套瓷网络</th><th>**网申主通道**</th></tr></thead><tbody><tr><td>策略 A 节奏</td><td>2026-09 入学、2026-12 申请可行</td><td>无科研做不到</td><td>**可行但高风险**；10 月前进组硬门槛</td></tr><tr><td>agent 叙事</td><td>作 AI 研究切入点</td><td>作唯一标签</td><td>**robotics 底盘 + agent 应用**</td></tr><tr><td>语言</td><td>2026 夏考 IELTS/TOEFL</td><td>UoM 在读即豁免</td><td>**先考 + 逐校豁免询价**</td></tr><tr><td>Lin 组</td><td>CS/NLP 强推利于 US AI/CS PhD</td><td>Robotics MSc 跨系、非机器人 PI</td><td>**可联系**；课题须桥接；非唯一选项</td></tr><tr><td>本科证据</td><td>竞赛/嵌入式可写工程能力</td><td>不能冒充科研</td><td>SOP **工程段** + MSc **研究段** 分立</td></tr></tbody></table>
       <h3 style="font-size:0.9rem;color:var(--muted)">讨论纪要</h3>
       <ul><li class='muted'>（无讨论纪要 — 见 templates/03）</li></ul>
     </section>
 
-    <section>
+    <section id="panel-teams" class="tab-panel">
       <h2>专家队评审</h2>
       <div class="teams"><article class="team"><header><h3>ai_workflow</h3><span class="pill">MODIFY</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>「AI agent」宜具体化为：**embodied agent / VLA / sim-to-real / multi-agent planning** 之一，挂在 robotics 课题下。</li><li>美国 committee 更认 **可检验贡献**，不认仅「会用 LLM API」。</li><li>MSc 期间可选：复现 1 篇 agent+robotics 论文 + 小改进 → 强于泛泛套瓷。</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>career_strategy</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>**转美主路径** = 申请 **美国 funded PhD**，不是「在英读 MSc 即留美」。</li><li>曼大 MSc 是 **credibility + research bridge**；华人 AP 套瓷是 **推荐信与课题来源**，不是终点。</li><li>宜 tier 化选校：reach/match/safe，且 **safe 也必须带 funding**。</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>critical_assumption</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li class='muted'>—</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>evidence_audit</h3><span class="pill">MODIFY</span></header><p class="muted">confidence: low</p><h4>Findings</h4><ul><li>策略 A + 无科研：**高风险**；竞赛/项目可作 **工程证据**，不能替代 MSc 研究段。</li><li>必填缺口：竞赛明细、GPA、语言成绩或豁免邮件、2026-10 前进组证明。</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>jury_panel</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>七队多数支持 **转美路径 RECOMMENDED_WITH_MODIFICATIONS**；ai_workflow、evidence_audit 为 MODIFY。</li><li>一致意见：**先路径与证据，后套瓷。**</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>risk_control</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>**最大风险：** 时间（MSc 短 + 申请季固定）&gt; 院校品牌。</li><li>套瓷伦理：禁止抄袭邮件、冒充经历；频率宜精准少投。</li><li>Plan B：欧洲/新加坡 PhD、或 MSc 后 RA 再申 US（仍可走转美，晚 1–2 年）。</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>simulation_engineering</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li class='muted'>—</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article><article class="team"><header><h3>technical_depth</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>本科自动化提供 **控制、编程、系统** 基础；需补 **概率、优化、现代 ML/RL**（MSc 课程应覆盖）。</li><li>US PhD 技术门槛：独立研究能力 &gt; 课分；**agent** 需落在仿真或实体实验。</li><li>与曼大 faculty 方向对齐优先于「华人」标签 alone。</li></ul><h4>Conflicts</h4><ul><li class='muted'>—</li></ul></article></div>
     </section>
 
-    <section>
+    <section id="panel-more" class="tab-panel">
       <h2>关键前提（CAC）</h2>
       <table><thead><tr><th>入学</th><th>2026-09 曼大</th></tr></thead><tbody><tr><td>MSc</td><td>12 个月</td></tr><tr><td>策略</td><td>**A → 2027 Fall US PhD**</td></tr><tr><td>本科科研</td><td>无</td></tr><tr><td>其他证据</td><td>自动化/嵌入式竞赛、项目</td></tr><tr><td>语言</td><td>待考；询问 UoM 豁免（见 language_waiver_notes）</td></tr></tbody></table><table><thead><tr><th>P0</th><th>1 年 MSc</th><th>fact</th><th>✓</th><th>—</th></tr></thead><tbody><tr><td>P1a</td><td>**2026-10 前**进组</td><td>unknown</td><td>导师确认</td><td>**改策略 B**</td></tr><tr><td>P1</td><td>申请季前有可演示 MSc 研究</td><td>unknown</td><td>repo/报告</td><td>降 tier / 改 B</td></tr><tr><td>P2</td><td>2026-12 前：TOEFL/IELTS **或** 各校书面豁免</td><td>unknown</td><td>成绩单/邮件</td><td>无法提交网申</td></tr><tr><td>P2b</td><td>不假设「UoM 在读」自动免语言</td><td>fact</td><td>policy</td><td>须考或询价</td></tr><tr><td>P3</td><td>MSc 导师愿写 **强科研推**（非礼节性）</td><td>inference</td><td>10-11 月沟通</td><td>策略 A 失效</td></tr><tr><td>P4</td><td>选校含足够 funded 项目</td><td>unknown</td><td>选校表</td><td>MODIFY 全奖预期</td></tr><tr><td>P5</td><td>竞赛/项目可改写为工程证据</td><td>inference</td><td>SOP 审稿</td><td>叙事空洞</td></tr><tr><td>P6</td><td>无 funding 不去</td><td>inference</td><td>Owner</td><td>财务风险</td></tr></tbody></table>
-    </section>
-
-    <section>
       <h2>分析产出</h2>
       <div class="output"><a href="../outputs/language_waiver_notes.md"><strong>语言考试与豁免说明（非法律意见，申请前须逐校核对）</strong></a><p>指在 **2026-09 赴曼大前**（或最迟 **2026-12 美国 PhD 网申截止前**）拿到 **TOEFL 或 IELTS** 的官方成绩，并达到目标校最低线（常见：TOEFL iBT 90–100+，IELTS 6.5–7.0+，**各系不同**）。</p></div><div class="output"><a href="../outputs/us_phd_path_analysis.md"><strong>转美路径分析（审理产出，非执行令）</strong></a><p>&gt; **Owner 锁定：** 2026-09 入学 · 1 年 MSc · **策略 A（2027 Fall US PhD）** · 本科无科研、有嵌入式/自动化竞赛与项目。</p></div>
-    </section>
-
-    <section>
       <h2>下一步</h2>
       <div class="todo"># CASE-20260603-msc-us-phd-agent-pi-outreach 下一步
 
@@ -219,9 +333,139 @@
     </section>
 
     <footer>
-      Generated by scripts/render_case_dashboard.py · data embedded for offline use.
+      Generated by scripts/render_case_dashboard.py · Phase 4 interactive SOP
     </footer>
   </div>
-  <script type="application/json" id="case-data">{"case_id": "CASE-20260603-msc-us-phd-agent-pi-outreach", "case_dir": "cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "status": "orchestrator_decided", "topic": "转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）", "case_type": "technical_route", "risk_tier": "high", "court_verdict_tier": "RECOMMENDED_WITH_MODIFICATIONS", "auth": {"needs_execution": false, "execution_authorized": false, "authorized_phase": null, "human_approval_required": true}, "steps": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图", "present": true}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义", "present": true}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由", "present": true}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由", "present": true}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录", "present": true}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict", "present": true}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查", "present": true}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "present": true}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal", "present": true}], "debate": {"modes": [], "minutes": [], "conflict_tables": [[["technical_feasibility_review", "2026-06-03", "2026-06-03", "technical_depth, ai_workflow", "路径技术可行"], ["adversarial_debate", "2026-06-03", "2026-06-03", "career_strategy vs risk_control", "见冲突表"], ["risk_priority_matrix", "2026-06-03", "2026-06-03", "risk_control, evidence_audit", "时间>院校"], ["jury_panel", "2026-06-03", "2026-06-03", "jury_panel", "→ RWM"]], [["主通道", "美国 funded PhD 网申", "靠华人 AP/套瓷网络", "**网申主通道**"], ["策略 A 节奏", "2026-09 入学、2026-12 申请可行", "无科研做不到", "**可行但高风险**；10 月前进组硬门槛"], ["agent 叙事", "作 AI 研究切入点", "作唯一标签", "**robotics 底盘 + agent 应用**"], ["语言", "2026 夏考 IELTS/TOEFL", "UoM 在读即豁免", "**先考 + 逐校豁免询价**"], ["Lin 组", "CS/NLP 强推利于 US AI/CS PhD", "Robotics MSc 跨系、非机器人 PI", "**可联系**；课题须桥接；非唯一选项"], ["本科证据", "竞赛/嵌入式可写工程能力", "不能冒充科研", "SOP **工程段** + MSc **研究段** 分立"]]], "focus": "**转美路径（策略 A：2027 Fall）** 在 **1 年 MSc、无本科科研、竞赛/项目为主** 前提下是否仍可执行；**Chenghua Lin（CS/NLP）** 作为进组候选是否改善叙事。"}, "cac_tables": [[["入学", "2026-09 曼大"], ["MSc", "12 个月"], ["策略", "**A → 2027 Fall US PhD**"], ["本科科研", "无"], ["其他证据", "自动化/嵌入式竞赛、项目"], ["语言", "待考；询问 UoM 豁免（见 language_waiver_notes）"]], [["P0", "1 年 MSc", "fact", "✓", "—"], ["P1a", "**2026-10 前**进组", "unknown", "导师确认", "**改策略 B**"], ["P1", "申请季前有可演示 MSc 研究", "unknown", "repo/报告", "降 tier / 改 B"], ["P2", "2026-12 前：TOEFL/IELTS **或** 各校书面豁免", "unknown", "成绩单/邮件", "无法提交网申"], ["P2b", "不假设「UoM 在读」自动免语言", "fact", "policy", "须考或询价"], ["P3", "MSc 导师愿写 **强科研推**（非礼节性）", "inference", "10-11 月沟通", "策略 A 失效"], ["P4", "选校含足够 funded 项目", "unknown", "选校表", "MODIFY 全奖预期"], ["P5", "竞赛/项目可改写为工程证据", "inference", "SOP 审稿", "叙事空洞"], ["P6", "无 funding 不去", "inference", "Owner", "财务风险"]]], "teams": [{"team_id": "ai_workflow", "tier": "MODIFY", "confidence": "medium", "findings": ["「AI agent」宜具体化为：**embodied agent / VLA / sim-to-real / multi-agent planning** 之一，挂在 robotics 课题下。", "美国 committee 更认 **可检验贡献**，不认仅「会用 LLM API」。", "MSc 期间可选：复现 1 篇 agent+robotics 论文 + 小改进 → 强于泛泛套瓷。"], "conflicts": [], "path": "team_blocks/ai_workflow.md"}, {"team_id": "career_strategy", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["**转美主路径** = 申请 **美国 funded PhD**，不是「在英读 MSc 即留美」。", "曼大 MSc 是 **credibility + research bridge**；华人 AP 套瓷是 **推荐信与课题来源**，不是终点。", "宜 tier 化选校：reach/match/safe，且 **safe 也必须带 funding**。"], "conflicts": [], "path": "team_blocks/career_strategy.md"}, {"team_id": "critical_assumption", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": [], "conflicts": [], "path": "team_blocks/critical_assumption.md"}, {"team_id": "evidence_audit", "tier": "MODIFY", "confidence": "low", "findings": ["策略 A + 无科研：**高风险**；竞赛/项目可作 **工程证据**，不能替代 MSc 研究段。", "必填缺口：竞赛明细、GPA、语言成绩或豁免邮件、2026-10 前进组证明。"], "conflicts": [], "path": "team_blocks/evidence_audit.md"}, {"team_id": "jury_panel", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["七队多数支持 **转美路径 RECOMMENDED_WITH_MODIFICATIONS**；ai_workflow、evidence_audit 为 MODIFY。", "一致意见：**先路径与证据，后套瓷。**"], "conflicts": [], "path": "team_blocks/jury_panel.md"}, {"team_id": "risk_control", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["**最大风险：** 时间（MSc 短 + 申请季固定）> 院校品牌。", "套瓷伦理：禁止抄袭邮件、冒充经历；频率宜精准少投。", "Plan B：欧洲/新加坡 PhD、或 MSc 后 RA 再申 US（仍可走转美，晚 1–2 年）。"], "conflicts": [], "path": "team_blocks/risk_control.md"}, {"team_id": "simulation_engineering", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": [], "conflicts": [], "path": "team_blocks/simulation_engineering.md"}, {"team_id": "technical_depth", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["本科自动化提供 **控制、编程、系统** 基础；需补 **概率、优化、现代 ML/RL**（MSc 课程应覆盖）。", "US PhD 技术门槛：独立研究能力 > 课分；**agent** 需落在仿真或实体实验。", "与曼大 faculty 方向对齐优先于「华人」标签 alone。"], "conflicts": [], "path": "team_blocks/technical_depth.md"}], "outputs": [{"name": "language_waiver_notes.md", "title": "语言考试与豁免说明（非法律意见，申请前须逐校核对）", "summary": "指在 **2026-09 赴曼大前**（或最迟 **2026-12 美国 PhD 网申截止前**）拿到 **TOEFL 或 IELTS** 的官方成绩，并达到目标校最低线（常见：TOEFL iBT 90–100+，IELTS 6.5–7.0+，**各系不同**）。", "path": "../outputs/language_waiver_notes.md"}, {"name": "us_phd_path_analysis.md", "title": "转美路径分析（审理产出，非执行令）", "summary": "> **Owner 锁定：** 2026-09 入学 · 1 年 MSc · **策略 A（2027 Fall US PhD）** · 本科无科研、有嵌入式/自动化竞赛与项目。", "path": "../outputs/us_phd_path_analysis.md"}], "todo": "# CASE-20260603-msc-us-phd-agent-pi-outreach 下一步\n\n1. 审阅并补充 `02_team_selection.md` / `02b_mode_selection.md` 中的 TODO 理由。\n2. 审阅 `artifacts/team_blocks/*.md`，按各团队 registry 定义填写 04 结构。\n3. 按 `engine/ORCHESTRATOR_RUNBOOK.md` 继续 03、05–12。\n4. 授权执行后：`python3 scripts/render_handoff.py cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach`\n5. 结案前：`python3 scripts/validate_case.py cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach`\n", "files": [{"rel": "00_owner_intent.md", "label": "原始意图", "href": "../00_owner_intent.md"}, {"rel": "01_case_intake.md", "label": "案件定义", "href": "../01_case_intake.md"}, {"rel": "02_team_selection.md", "label": "团队选择理由", "href": "../02_team_selection.md"}, {"rel": "02b_mode_selection.md", "label": "模式选择理由", "href": "../02b_mode_selection.md"}, {"rel": "03_debate_session.md", "label": "辩论记录", "href": "../03_debate_session.md"}, {"rel": "05_court_summary.md", "label": "汇总 verdict", "href": "../05_court_summary.md"}, {"rel": "06_critical_assumption_check.md", "label": "关键前提检查", "href": "../06_critical_assumption_check.md"}, {"rel": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "href": "../07_orchestrator_decision.md"}, {"rel": "12_lesson_proposal.md", "label": "lesson proposal", "href": "../12_lesson_proposal.md"}]}</script>
+  <script type="application/json" id="case-data">{"case_id": "CASE-20260603-msc-us-phd-agent-pi-outreach", "case_dir": "cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "status": "orchestrator_decided", "topic": "转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）", "case_type": "technical_route", "risk_tier": "high", "court_verdict_tier": "RECOMMENDED_WITH_MODIFICATIONS", "auth": {"needs_execution": false, "execution_authorized": false, "authorized_phase": null, "human_approval_required": true}, "steps": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图", "present": true}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义", "present": true}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由", "present": true}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由", "present": true}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录", "present": true}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict", "present": true}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查", "present": true}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "present": true}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal", "present": true}], "wizard": {"case_dir": "cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "case_dir_abs": "/Users/openclaw/Personal-Orchestrator-Harness/cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "case_id": "CASE-20260603-msc-us-phd-agent-pi-outreach", "status": "orchestrator_decided", "topic": "转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）", "auth": {"needs_execution": false, "execution_authorized": false, "authorized_phase": null, "human_approval_required": true}, "present": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图"}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义"}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由"}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由"}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录"}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict"}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查"}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策"}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal"}], "missing": [], "current_step": {"key": "complete", "file": "", "label": "链路完整"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "cursor_prompt": "你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。", "court_teams": ["technical_depth", "career_strategy", "evidence_audit", "critical_assumption", "risk_control", "ai_workflow", "jury_panel"], "court_plan": [], "cli_hint": "python3 scripts/validate_case.py {case_dir}"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "debate": {"modes": [], "minutes": [], "conflict_tables": [[["technical_feasibility_review", "2026-06-03", "2026-06-03", "technical_depth, ai_workflow", "路径技术可行"], ["adversarial_debate", "2026-06-03", "2026-06-03", "career_strategy vs risk_control", "见冲突表"], ["risk_priority_matrix", "2026-06-03", "2026-06-03", "risk_control, evidence_audit", "时间>院校"], ["jury_panel", "2026-06-03", "2026-06-03", "jury_panel", "→ RWM"]], [["主通道", "美国 funded PhD 网申", "靠华人 AP/套瓷网络", "**网申主通道**"], ["策略 A 节奏", "2026-09 入学、2026-12 申请可行", "无科研做不到", "**可行但高风险**；10 月前进组硬门槛"], ["agent 叙事", "作 AI 研究切入点", "作唯一标签", "**robotics 底盘 + agent 应用**"], ["语言", "2026 夏考 IELTS/TOEFL", "UoM 在读即豁免", "**先考 + 逐校豁免询价**"], ["Lin 组", "CS/NLP 强推利于 US AI/CS PhD", "Robotics MSc 跨系、非机器人 PI", "**可联系**；课题须桥接；非唯一选项"], ["本科证据", "竞赛/嵌入式可写工程能力", "不能冒充科研", "SOP **工程段** + MSc **研究段** 分立"]]], "focus": "**转美路径（策略 A：2027 Fall）** 在 **1 年 MSc、无本科科研、竞赛/项目为主** 前提下是否仍可执行；**Chenghua Lin（CS/NLP）** 作为进组候选是否改善叙事。"}, "cac_tables": [[["入学", "2026-09 曼大"], ["MSc", "12 个月"], ["策略", "**A → 2027 Fall US PhD**"], ["本科科研", "无"], ["其他证据", "自动化/嵌入式竞赛、项目"], ["语言", "待考；询问 UoM 豁免（见 language_waiver_notes）"]], [["P0", "1 年 MSc", "fact", "✓", "—"], ["P1a", "**2026-10 前**进组", "unknown", "导师确认", "**改策略 B**"], ["P1", "申请季前有可演示 MSc 研究", "unknown", "repo/报告", "降 tier / 改 B"], ["P2", "2026-12 前：TOEFL/IELTS **或** 各校书面豁免", "unknown", "成绩单/邮件", "无法提交网申"], ["P2b", "不假设「UoM 在读」自动免语言", "fact", "policy", "须考或询价"], ["P3", "MSc 导师愿写 **强科研推**（非礼节性）", "inference", "10-11 月沟通", "策略 A 失效"], ["P4", "选校含足够 funded 项目", "unknown", "选校表", "MODIFY 全奖预期"], ["P5", "竞赛/项目可改写为工程证据", "inference", "SOP 审稿", "叙事空洞"], ["P6", "无 funding 不去", "inference", "Owner", "财务风险"]]], "teams": [{"team_id": "ai_workflow", "tier": "MODIFY", "confidence": "medium", "findings": ["「AI agent」宜具体化为：**embodied agent / VLA / sim-to-real / multi-agent planning** 之一，挂在 robotics 课题下。", "美国 committee 更认 **可检验贡献**，不认仅「会用 LLM API」。", "MSc 期间可选：复现 1 篇 agent+robotics 论文 + 小改进 → 强于泛泛套瓷。"], "conflicts": [], "path": "team_blocks/ai_workflow.md"}, {"team_id": "career_strategy", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["**转美主路径** = 申请 **美国 funded PhD**，不是「在英读 MSc 即留美」。", "曼大 MSc 是 **credibility + research bridge**；华人 AP 套瓷是 **推荐信与课题来源**，不是终点。", "宜 tier 化选校：reach/match/safe，且 **safe 也必须带 funding**。"], "conflicts": [], "path": "team_blocks/career_strategy.md"}, {"team_id": "critical_assumption", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": [], "conflicts": [], "path": "team_blocks/critical_assumption.md"}, {"team_id": "evidence_audit", "tier": "MODIFY", "confidence": "low", "findings": ["策略 A + 无科研：**高风险**；竞赛/项目可作 **工程证据**，不能替代 MSc 研究段。", "必填缺口：竞赛明细、GPA、语言成绩或豁免邮件、2026-10 前进组证明。"], "conflicts": [], "path": "team_blocks/evidence_audit.md"}, {"team_id": "jury_panel", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["七队多数支持 **转美路径 RECOMMENDED_WITH_MODIFICATIONS**；ai_workflow、evidence_audit 为 MODIFY。", "一致意见：**先路径与证据，后套瓷。**"], "conflicts": [], "path": "team_blocks/jury_panel.md"}, {"team_id": "risk_control", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["**最大风险：** 时间（MSc 短 + 申请季固定）> 院校品牌。", "套瓷伦理：禁止抄袭邮件、冒充经历；频率宜精准少投。", "Plan B：欧洲/新加坡 PhD、或 MSc 后 RA 再申 US（仍可走转美，晚 1–2 年）。"], "conflicts": [], "path": "team_blocks/risk_control.md"}, {"team_id": "simulation_engineering", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": [], "conflicts": [], "path": "team_blocks/simulation_engineering.md"}, {"team_id": "technical_depth", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["本科自动化提供 **控制、编程、系统** 基础；需补 **概率、优化、现代 ML/RL**（MSc 课程应覆盖）。", "US PhD 技术门槛：独立研究能力 > 课分；**agent** 需落在仿真或实体实验。", "与曼大 faculty 方向对齐优先于「华人」标签 alone。"], "conflicts": [], "path": "team_blocks/technical_depth.md"}], "outputs": [{"name": "language_waiver_notes.md", "title": "语言考试与豁免说明（非法律意见，申请前须逐校核对）", "summary": "指在 **2026-09 赴曼大前**（或最迟 **2026-12 美国 PhD 网申截止前**）拿到 **TOEFL 或 IELTS** 的官方成绩，并达到目标校最低线（常见：TOEFL iBT 90–100+，IELTS 6.5–7.0+，**各系不同**）。", "path": "../outputs/language_waiver_notes.md"}, {"name": "us_phd_path_analysis.md", "title": "转美路径分析（审理产出，非执行令）", "summary": "> **Owner 锁定：** 2026-09 入学 · 1 年 MSc · **策略 A（2027 Fall US PhD）** · 本科无科研、有嵌入式/自动化竞赛与项目。", "path": "../outputs/us_phd_path_analysis.md"}], "todo": "# CASE-20260603-msc-us-phd-agent-pi-outreach 下一步\n\n1. 审阅并补充 `02_team_selection.md` / `02b_mode_selection.md` 中的 TODO 理由。\n2. 审阅 `artifacts/team_blocks/*.md`，按各团队 registry 定义填写 04 结构。\n3. 按 `engine/ORCHESTRATOR_RUNBOOK.md` 继续 03、05–12。\n4. 授权执行后：`python3 scripts/render_handoff.py cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach`\n5. 结案前：`python3 scripts/validate_case.py cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach`\n", "has_missing": false, "files": [{"rel": "00_owner_intent.md", "label": "原始意图", "href": "../00_owner_intent.md"}, {"rel": "01_case_intake.md", "label": "案件定义", "href": "../01_case_intake.md"}, {"rel": "02_team_selection.md", "label": "团队选择理由", "href": "../02_team_selection.md"}, {"rel": "02b_mode_selection.md", "label": "模式选择理由", "href": "../02b_mode_selection.md"}, {"rel": "03_debate_session.md", "label": "辩论记录", "href": "../03_debate_session.md"}, {"rel": "05_court_summary.md", "label": "汇总 verdict", "href": "../05_court_summary.md"}, {"rel": "06_critical_assumption_check.md", "label": "关键前提检查", "href": "../06_critical_assumption_check.md"}, {"rel": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "href": "../07_orchestrator_decision.md"}, {"rel": "12_lesson_proposal.md", "label": "lesson proposal", "href": "../12_lesson_proposal.md"}]}</script>
+  
+<script>
+(function() {
+  const SOP_API = "http://127.0.0.1:8765";
+  const BOOT = {"case_dir": "cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "wizard": {"case_dir": "cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "case_dir_abs": "/Users/openclaw/Personal-Orchestrator-Harness/cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach", "case_id": "CASE-20260603-msc-us-phd-agent-pi-outreach", "status": "orchestrator_decided", "topic": "转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）", "auth": {"needs_execution": false, "execution_authorized": false, "authorized_phase": null, "human_approval_required": true}, "present": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图"}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义"}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由"}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由"}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录"}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict"}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查"}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策"}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal"}], "missing": [], "current_step": {"key": "complete", "file": "", "label": "链路完整"}, "next_action": "运行 `python3 scripts/validate_case.py <case_dir>`；通过后可考虑 completed。", "cursor_prompt": "你是 Orchestrator。运行 validate_case；通过后可标记 completed 并审计 lesson。", "court_teams": ["technical_depth", "career_strategy", "evidence_audit", "critical_assumption", "risk_control", "ai_workflow", "jury_panel"], "court_plan": [], "cli_hint": "python3 scripts/validate_case.py {case_dir}"}};
+  const logEl = document.getElementById("api-log");
+  const statusEl = document.getElementById("sop-status");
+  const promptEl = document.getElementById("cursor-prompt");
+
+  function log(msg) {
+    if (logEl) logEl.textContent = (logEl.textContent + "\n" + msg).trim();
+  }
+
+  async function api(path, opts) {
+    const res = await fetch(SOP_API + path, opts);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return data;
+  }
+
+  async function refreshWizard() {
+    try {
+      const state = await api("/api/case?path=" + encodeURIComponent(BOOT.case_dir));
+      statusEl.textContent = "SOP Console 已连接";
+      statusEl.className = "muted ok";
+      if (state.cursor_prompt) promptEl.value = state.cursor_prompt;
+      const step = state.current_step || {};
+      const link = document.getElementById("wizard-file-link");
+      if (link && step.file) {
+        link.href = "../" + step.file;
+        link.textContent = step.file;
+      }
+    } catch (e) {
+      statusEl.textContent = "只读模式（未启动 make sop-console）";
+      statusEl.className = "muted";
+    }
+  }
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.panel).classList.add("active");
+    });
+  });
+
+  document.getElementById("btn-copy-prompt").addEventListener("click", () => {
+    navigator.clipboard.writeText(promptEl.value).then(() => log("已复制口令"));
+  });
+
+  document.getElementById("btn-regenerate").addEventListener("click", async () => {
+    try {
+      await api("/api/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: BOOT.case_dir }),
+      });
+      log("看板已重生；请刷新浏览器");
+      location.reload();
+    } catch (e) { log("regenerate: " + e.message); }
+  });
+
+  function fieldsFromForm(form) {
+    const fields = {};
+    ["status","authorized_phase"].forEach((k) => {
+      const v = form.elements[k]?.value?.trim();
+      if (v) fields[k] = v;
+    });
+    ["needs_execution","execution_authorized","human_approval_required"].forEach((k) => {
+      const v = form.elements[k]?.value;
+      if (v === "true") fields[k] = true;
+      if (v === "false") fields[k] = false;
+    });
+    return fields;
+  }
+
+  document.getElementById("patch-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const form = ev.target;
+    try {
+      const body = {
+        path: BOOT.case_dir,
+        target: form.patch_target.value,
+        fields: fieldsFromForm(form),
+        owner_confirmed: form.owner_confirmed.checked,
+      };
+      const minute = form.debate_minute.value.trim();
+      if (minute) body.debate_minute = minute;
+      await api("/api/patch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      log("PATCH OK");
+      refreshWizard();
+    } catch (e) { log("PATCH: " + e.message); }
+  });
+
+  document.getElementById("authorize-form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const form = ev.target;
+    if (!form.owner_confirmed.checked) {
+      log("authorize: 需要 Owner 确认");
+      return;
+    }
+    try {
+      await api("/api/authorize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: BOOT.case_dir,
+          owner_confirmed: true,
+          fields: {
+            needs_execution: true,
+            execution_authorized: true,
+            authorized_phase: form.authorized_phase.value.trim() || "phase1",
+            human_approval_required: false,
+          },
+        }),
+      });
+      log("authorize OK");
+      refreshWizard();
+    } catch (e) { log("authorize: " + e.message); }
+  });
+
+  refreshWizard();
+})();
+</script>
+
 </body>
 </html>

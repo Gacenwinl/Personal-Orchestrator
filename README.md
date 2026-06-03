@@ -39,7 +39,10 @@ make dashboard CASE=cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach
 # 浏览器打开该目录下 artifacts/CASE_DASHBOARD.html
 ```
 
-全部案件索引：`make dashboards` → [cases/index.html](cases/index.html)。  
+全部案件索引：`make dashboards` → [cases/index.html](cases/index.html)。
+
+**Phase 4（交互 SOP）：** [docs/PHASE4_INTERACTIVE_SOP.md](docs/PHASE4_INTERACTIVE_SOP.md) — `make sop-console` 后看板「向导」Tab 可 PATCH / 复制口令 / 刷新；`make court-launch CASE=…` 生成法庭启动清单。
+
 IDE 内 SOP 总览：打开 [orchestrator-sop.canvas.tsx](file:///Users/openclaw/.cursor/projects/Users-openclaw-Personal-Orchestrator-Harness/canvases/orchestrator-sop.canvas.tsx)（讨论过程在 03 + team_blocks，看板内聚合展示）。
 
 **工作流测试模型（当前默认）：** 小米 `xiaomi/mimo-v2.5-pro`，与 OpenClaw/Hermes 一致 → [docs/WORKFLOW_TEST_MIMO.md](docs/WORKFLOW_TEST_MIMO.md)。

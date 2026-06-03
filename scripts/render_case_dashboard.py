@@ -7,103 +7,25 @@ import argparse
 import html
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
-# Mirror case_status.py chain logic (keep in sync manually).
-BASE_CHAIN = [
-    ("owner_intent", "00_owner_intent.md", "原始意图"),
-    ("case_intake", "01_case_intake.md", "案件定义"),
-    ("team_selection", "02_team_selection.md", "团队选择理由"),
-    ("mode_selection", "02b_mode_selection.md", "模式选择理由"),
-    ("debate_session", "03_debate_session.md", "辩论记录"),
-    ("court_summary", "05_court_summary.md", "汇总 verdict"),
-    ("cac", "06_critical_assumption_check.md", "关键前提检查"),
-    ("decision", "07_orchestrator_decision.md", "Orchestrator 决策"),
-    ("phase_plan", "08_phase_plan.md", "Phase 规划"),
-    ("instruction", "09_executor_instruction.md", "执行任务书"),
-    ("feedback", "10_execution_feedback.md", "执行反馈"),
-    ("acceptance", "11_acceptance_review.md", "验收结果"),
-    ("lesson", "12_lesson_proposal.md", "lesson proposal"),
-]
-
-RECOMMENDED_PLUS = {
-    "RECOMMENDED_WITH_MODIFICATIONS",
-    "RECOMMENDED",
-    "IMMEDIATELY_RECOMMENDED",
-}
-
-ROOT = Path(__file__).resolve().parents[1]
-
-
-def parse_frontmatter(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    text = path.read_text(encoding="utf-8")
-    match = re.match(r"^---\n(.*?)\n---\n", text, flags=re.DOTALL)
-    if not match:
-        return {}
-    data: dict[str, Any] = {}
-    for raw_line in match.group(1).splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        data[key.strip()] = parse_scalar(strip_inline_comment(value).strip())
-    return data
-
-
-def strip_inline_comment(value: str) -> str:
-    in_quote: str | None = None
-    for index, char in enumerate(value):
-        if char in {"'", '"'}:
-            if in_quote == char:
-                in_quote = None
-            elif in_quote is None:
-                in_quote = char
-        elif char == "#" and in_quote is None:
-            return value[:index]
-    return value
-
-
-def parse_scalar(value: str) -> Any:
-    value = value.strip()
-    if value in {"", "null", "None", "~"}:
-        return None
-    if value == "true":
-        return True
-    if value == "false":
-        return False
-    if (value.startswith('"') and value.endswith('"')) or (
-        value.startswith("'") and value.endswith("'")
-    ):
-        return value[1:-1]
-    return value
-
-
-def bool_value(value: Any) -> bool:
-    return value is True
-
-
-def required_chain(case_dir: Path, intake: dict[str, Any], decision: dict[str, Any]) -> list[tuple[str, str, str]]:
-    chain = BASE_CHAIN.copy()
-    needs_execution = bool_value(decision.get("needs_execution", intake.get("needs_execution")))
-    authorized = bool_value(
-        decision.get("execution_authorized", intake.get("execution_authorized"))
-    )
-    risk = intake.get("risk_tier")
-    verdict = intake.get("court_verdict_tier")
-    cac_required = risk in {"high", "critical"} or verdict in RECOMMENDED_PLUS
-
-    if not cac_required:
-        chain = [item for item in chain if item[0] != "cac"]
-    if not needs_execution or not authorized:
-        chain = [
-            item
-            for item in chain
-            if item[0] not in {"phase_plan", "instruction", "feedback", "acceptance"}
-        ]
-    return chain
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.case_chain import (  # noqa: E402
+    BASE_CHAIN,
+    ROOT,
+    chain_progress,
+    get_wizard_state,
+    load_wizard_registry,
+    parse_frontmatter,
+    required_chain,
+)
+from lib.dashboard_wizard import (  # noqa: E402
+    WIZARD_EXTRA_CSS,
+    wizard_panel_html,
+    wizard_script,
+)
 
 
 def extract_section(body: str, heading: str) -> str:
@@ -131,7 +53,9 @@ def parse_markdown_tables(text: str) -> list[list[list[str]]]:
     index = 0
     while index < len(lines):
         line = lines[index].strip()
-        if line.startswith("|") and index + 1 < len(lines) and re.match(r"^\|[-:\s|]+\|$", lines[index + 1].strip()):
+        if line.startswith("|") and index + 1 < len(lines) and re.match(
+            r"^\|[-:\s|]+\|$", lines[index + 1].strip()
+        ):
             rows: list[list[str]] = []
             index += 2
             while index < len(lines) and lines[index].strip().startswith("|"):
@@ -198,7 +122,6 @@ def load_outputs(case_dir: Path) -> list[dict[str, str]]:
 
 
 def href_from_dashboard(case_dir: Path, target: Path) -> str:
-    """Link from artifacts/CASE_DASHBOARD.html to case files."""
     rel = target.relative_to(case_dir)
     parts = rel.parts
     if parts and parts[0] == "artifacts" and len(parts) > 1:
@@ -237,6 +160,13 @@ def build_case_data(case_dir: Path) -> dict[str, Any]:
     todo_path = case_dir / "CASE_TODO.md"
     todo_text = todo_path.read_text(encoding="utf-8") if todo_path.is_file() else ""
 
+    wizard = get_wizard_state(case_dir)
+    reg = load_wizard_registry()
+    step_cfg = (reg.get("steps") or {}).get(wizard["current_step"]["key"], {})
+    wizard["cli_hint"] = step_cfg.get("cli_hint", "")
+
+    _, missing, _, _ = chain_progress(case_dir)
+
     return {
         "case_id": intake.get("case_id", case_dir.name),
         "case_dir": str(case_dir.relative_to(ROOT)),
@@ -245,29 +175,25 @@ def build_case_data(case_dir: Path) -> dict[str, Any]:
         "case_type": intake.get("case_type", "—"),
         "risk_tier": intake.get("risk_tier", "—"),
         "court_verdict_tier": intake.get("court_verdict_tier", "—"),
-        "auth": {
-            "needs_execution": decision.get("needs_execution", intake.get("needs_execution")),
-            "execution_authorized": decision.get(
-                "execution_authorized", intake.get("execution_authorized")
-            ),
-            "authorized_phase": decision.get("authorized_phase", intake.get("authorized_phase")),
-            "human_approval_required": decision.get(
-                "human_approval_required", intake.get("human_approval_required")
-            ),
-        },
+        "auth": wizard["auth"],
         "steps": steps,
+        "wizard": wizard,
+        "next_action": wizard["next_action"],
         "debate": {
             "modes": extract_bullets(extract_section(debate_body, "模式执行记录") or debate_body, 8),
             "minutes": extract_bullets(extract_section(debate_body, "讨论纪要"), 20),
             "conflict_tables": parse_markdown_tables(
                 extract_section(debate_body, "冲突摘要") or debate_body
             ),
-            "focus": extract_section(debate_body, "焦点").splitlines()[0] if extract_section(debate_body, "焦点") else "",
+            "focus": extract_section(debate_body, "焦点").splitlines()[0]
+            if extract_section(debate_body, "焦点")
+            else "",
         },
         "cac_tables": parse_markdown_tables(cac_body),
         "teams": load_team_blocks(case_dir),
         "outputs": load_outputs(case_dir),
         "todo": todo_text[:1500],
+        "has_missing": bool(missing),
         "files": [
             {"rel": rel, "label": label, "href": Path("..", rel).as_posix()}
             for _, rel, label in BASE_CHAIN
@@ -304,6 +230,7 @@ def gate_class(value: Any, good_when_true: bool = True) -> str:
 
 def render_html(data: dict[str, Any]) -> str:
     auth = data["auth"]
+    wizard = data.get("wizard") or {}
     steps_html = []
     done = sum(1 for s in data["steps"] if s["present"])
     total = len(data["steps"])
@@ -334,7 +261,9 @@ def render_html(data: dict[str, Any]) -> str:
         debate_conflicts += render_table(table)
 
     minutes = data["debate"].get("minutes") or []
-    minutes_html = "".join(f"<li>{html.escape(x)}</li>" for x in minutes) or "<li class='muted'>（无讨论纪要 — 见 templates/03）</li>"
+    minutes_html = "".join(f"<li>{html.escape(x)}</li>" for x in minutes) or (
+        "<li class='muted'>（无讨论纪要 — 见 templates/03）</li>"
+    )
 
     cac_html = ""
     for table in data.get("cac_tables", []):
@@ -351,6 +280,11 @@ def render_html(data: dict[str, Any]) -> str:
     payload = json.dumps(data, ensure_ascii=False)
     topic = html.escape(str(data.get("topic", "")))
     case_id = html.escape(str(data.get("case_id", "")))
+    next_action = html.escape(str(data.get("next_action", "")))
+    case_rel = str(data.get("case_dir", ""))
+
+    wizard_html = wizard_panel_html(wizard)
+    wizard_js = wizard_script(case_rel, wizard)
 
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -500,6 +434,7 @@ def render_html(data: dict[str, Any]) -> str:
       margin-bottom: 12px;
       font-size: 0.9rem;
     }}
+    {WIZARD_EXTRA_CSS}
   </style>
 </head>
 <body>
@@ -527,49 +462,55 @@ def render_html(data: dict[str, Any]) -> str:
           <strong>human_approval_required</strong>{html.escape(str(auth.get("human_approval_required")))}
         </div>
       </div>
-      <p class="callout">法庭 verdict ≠ 执行授权。本页为 Markdown 真源的只读视图；更新案件后重新运行 <code>render_case_dashboard.py</code>。</p>
+      <p class="callout">法庭 verdict ≠ 执行授权。交互写回需 <code>make sop-console</code>；否则本页只读。</p>
     </header>
 
-    <section>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-panel="panel-wizard">向导</button>
+      <button type="button" class="tab-btn" data-panel="panel-court">法庭</button>
+      <button type="button" class="tab-btn" data-panel="panel-chain">链路</button>
+      <button type="button" class="tab-btn" data-panel="panel-debate">讨论</button>
+      <button type="button" class="tab-btn" data-panel="panel-teams">专家队</button>
+      <button type="button" class="tab-btn" data-panel="panel-more">更多</button>
+    </div>
+
+    {wizard_html}
+
+    <section id="panel-chain" class="tab-panel">
       <h2>可审计链路</h2>
-      <p class="progress">{done} / {total} 步就绪</p>
+      <p class="progress">{done} / {total} 步就绪 · {next_action}</p>
       <div class="steps">{"".join(steps_html)}</div>
     </section>
 
-    <section>
+    <section id="panel-debate" class="tab-panel">
       <h2>讨论过程</h2>
-      <p class="muted">真源：<code>03_debate_session.md</code> + <code>artifacts/team_blocks/</code></p>
+      <p class="muted">真源：<code>03_debate_session.md</code></p>
       <h3 style="font-size:0.9rem;color:var(--muted)">冲突摘要</h3>
       {debate_conflicts or "<p class='muted'>—</p>"}
       <h3 style="font-size:0.9rem;color:var(--muted)">讨论纪要</h3>
       <ul>{minutes_html}</ul>
     </section>
 
-    <section>
+    <section id="panel-teams" class="tab-panel">
       <h2>专家队评审</h2>
       <div class="teams">{"".join(teams_html) or "<p class='muted'>无 team_blocks</p>"}</div>
     </section>
 
-    <section>
+    <section id="panel-more" class="tab-panel">
       <h2>关键前提（CAC）</h2>
       {cac_html or "<p class='muted'>—</p>"}
-    </section>
-
-    <section>
       <h2>分析产出</h2>
       {outputs_html or "<p class='muted'>无 outputs/*.md</p>"}
-    </section>
-
-    <section>
       <h2>下一步</h2>
       <div class="todo">{html.escape(data.get("todo") or "见 CASE_TODO.md")}</div>
     </section>
 
     <footer>
-      Generated by scripts/render_case_dashboard.py · data embedded for offline use.
+      Generated by scripts/render_case_dashboard.py · Phase 4 interactive SOP
     </footer>
   </div>
   <script type="application/json" id="case-data">{payload}</script>
+  {wizard_js}
 </body>
 </html>
 """
@@ -638,7 +579,7 @@ def render_index(roots: list[Path], force: bool) -> Path:
 </head>
 <body>
   <h1>Personal-Orchestrator Cases</h1>
-  <p class="muted">运行 <code>python3 scripts/render_case_dashboard.py --index</code> 刷新</p>
+  <p class="muted">运行 <code>make dashboards</code> 刷新 · 交互：<code>make sop-console</code></p>
   <table>
     <thead><tr><th>目录</th><th>case_id</th><th>status</th><th>topic</th><th>看板</th></tr></thead>
     <tbody>{"".join(body_rows)}</tbody>
