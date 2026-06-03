@@ -77,6 +77,7 @@ def main() -> int:
             "scripts/list_cases.py",
             "scripts/scaffold_team_blocks.py",
             "scripts/render_handoff.py",
+            "scripts/render_case_dashboard.py",
             "scripts/smoke_test.py",
         ]
     )
@@ -138,6 +139,19 @@ def main() -> int:
         print(handoff.stdout)
         print(handoff.stderr)
         handoff.check_returncode()
+
+    run(
+        [
+            python,
+            "scripts/render_case_dashboard.py",
+            "cases/samples/CASE-001-mems-career-direction",
+            "--force",
+        ]
+    )
+    dash = ROOT / "cases/samples/CASE-001-mems-career-direction/artifacts/CASE_DASHBOARD.html"
+    text = dash.read_text(encoding="utf-8")
+    if "CASE-001-mems-career-direction" not in text:
+        raise RuntimeError("dashboard missing case_id")
 
     print("\nSmoke tests passed.")
     return 0

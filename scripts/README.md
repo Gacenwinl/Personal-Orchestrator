@@ -16,6 +16,17 @@ python3 scripts/smoke_test.py
 python3 scripts/case_status.py cases/samples/CASE-001-mems-career-direction
 ```
 
+## render_case_dashboard.py
+
+从案件 Markdown 生成单文件 HTML 看板（链路进度、辩论过程、team_blocks、CAC、授权闸门）。
+
+```bash
+python3 scripts/render_case_dashboard.py cases/active/CASE-xxx --force
+python3 scripts/render_case_dashboard.py --index --force
+```
+
+输出：`artifacts/CASE_DASHBOARD.html`；索引：`cases/index.html`。
+
 ## check_registry.py
 
 校验 `registry/` 内团队、模式和规则引用是否一致。

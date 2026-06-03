@@ -68,6 +68,25 @@ python3 scripts/render_handoff.py cases/active/CASE-xxx
 
 将生成的 `artifacts/HANDOFF_hermes_phase1.md` **手工**复制到 Hermes 会话。见 [integrations/hermes_handoff.md](../integrations/hermes_handoff.md)。
 
+## 3c. 生成 HTML 案件看板
+
+```bash
+make dashboard CASE=cases/active/CASE-xxx
+# 或
+python3 scripts/render_case_dashboard.py cases/active/CASE-xxx --force
+```
+
+用浏览器打开 `cases/active/CASE-xxx/artifacts/CASE_DASHBOARD.html`。
+
+看板包含：12 步进度、授权闸门、**03 讨论纪要 + 冲突表**、各 `team_blocks`、CAC、outputs 摘要。
+
+全部案件列表：
+
+```bash
+make dashboards
+# → cases/index.html
+```
+
 ## 4. 结案前校验
 
 查看当前缺什么：

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CASE-001-mems-career-direction — Harness Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3d8bfd;
+      --ok: #3ecf8e;
+      --warn: #e8b339;
+      --bad: #f07178;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Pro Text", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; }
+    header.hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; }
+    .topic { color: var(--muted); font-size: 0.95rem; margin-bottom: 16px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .gates {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .gate {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 0.85rem;
+    }
+    .gate-ok { border-color: var(--ok); }
+    .gate-warn { border-color: var(--warn); }
+    .gate-neutral { border-color: var(--border); }
+    .gate strong { display: block; margin-bottom: 4px; }
+    section {
+      margin-bottom: 24px;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    h2 { margin: 0 0 14px; font-size: 1.05rem; }
+    .progress { color: var(--muted); font-size: 0.85rem; margin-bottom: 12px; }
+    .steps { display: grid; gap: 6px; }
+    .step {
+      display: grid;
+      grid-template-columns: 24px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+      font-size: 0.88rem;
+    }
+    .step.ok .mark { color: var(--ok); }
+    .step.miss .mark { color: var(--warn); }
+    .step a { color: var(--accent); text-decoration: none; }
+    .step code { color: var(--muted); font-size: 0.75rem; }
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .team {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .team header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .team h3 { margin: 0; font-size: 0.95rem; }
+    .pill {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .team h4 { margin: 12px 0 6px; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+    .team ul { margin: 0; padding-left: 18px; font-size: 0.85rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: var(--bg); color: var(--muted); }
+    .output {
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .output a { color: var(--accent); }
+    .todo {
+      white-space: pre-wrap;
+      font-size: 0.85rem;
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .muted { color: var(--muted); }
+    footer { margin-top: 24px; font-size: 0.75rem; color: var(--muted); }
+    .callout {
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <h1>CASE-001-mems-career-direction</h1>
+      <p class="topic">是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集</p>
+      <div class="meta">
+        <span class="badge">status: completed</span>
+        <span class="badge">verdict: RECOMMENDED_WITH_MODIFICATIONS</span>
+        <span class="badge">risk: high</span>
+        <span class="badge">type: career_direction</span>
+      </div>
+      <div class="gates">
+        <div class="gate gate-ok">
+          <strong>needs_execution</strong>True
+        </div>
+        <div class="gate gate-ok">
+          <strong>execution_authorized</strong>True
+        </div>
+        <div class="gate gate-neutral">
+          <strong>authorized_phase</strong>phase1
+        </div>
+        <div class="gate gate-ok">
+          <strong>human_approval_required</strong>False
+        </div>
+      </div>
+      <p class="callout">法庭 verdict ≠ 执行授权。本页为 Markdown 真源的只读视图；更新案件后重新运行 <code>render_case_dashboard.py</code>。</p>
+    </header>
+
+    <section>
+      <h2>可审计链路</h2>
+      <p class="progress">13 / 13 步就绪</p>
+      <div class="steps"><div class="step ok"><span class="mark">✓</span><a href="../00_owner_intent.md">原始意图</a><code>00_owner_intent.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../01_case_intake.md">案件定义</a><code>01_case_intake.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02_team_selection.md">团队选择理由</a><code>02_team_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../02b_mode_selection.md">模式选择理由</a><code>02b_mode_selection.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../03_debate_session.md">辩论记录</a><code>03_debate_session.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../05_court_summary.md">汇总 verdict</a><code>05_court_summary.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../06_critical_assumption_check.md">关键前提检查</a><code>06_critical_assumption_check.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../07_orchestrator_decision.md">Orchestrator 决策</a><code>07_orchestrator_decision.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../08_phase_plan.md">Phase 规划</a><code>08_phase_plan.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../09_executor_instruction.md">执行任务书</a><code>09_executor_instruction.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../10_execution_feedback.md">执行反馈</a><code>10_execution_feedback.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../11_acceptance_review.md">验收结果</a><code>11_acceptance_review.md</code></div><div class="step ok"><span class="mark">✓</span><a href="../12_lesson_proposal.md">lesson proposal</a><code>12_lesson_proposal.md</code></div></div>
+    </section>
+
+    <section>
+      <h2>讨论过程</h2>
+      <p class="muted">真源：<code>03_debate_session.md</code> + <code>artifacts/team_blocks/</code></p>
+      <h3 style="font-size:0.9rem;color:var(--muted)">冲突摘要</h3>
+      <table><thead><tr><th>parallel_debate</th><th>8 teams</th><th>见 artifacts/team_blocks/</th></tr></thead><tbody><tr><td>career_fit_matrix</td><td>jd_matching, resume_packaging, market_reality</td><td>矩阵见下</td></tr><tr><td>cross_team_conflict_detector</td><td>all</td><td>1 条 major：包装 vs 市场</td></tr><tr><td>jury_panel</td><td>jury_panel</td><td>→ 05</td></tr></tbody></table><table><thead><tr><th>封装/先进封装</th><th>中</th><th>中</th><th>高</th><th>低</th></tr></thead><tbody><tr><td>器件/MEMS 工艺</td><td>中-低</td><td>低-中</td><td>高</td><td>低</td></tr><tr><td>CAE/结构仿真</td><td>中-高</td><td>中</td><td>很高</td><td>低</td></tr><tr><td>混合（器件+仿真）</td><td>中</td><td>中</td><td>中</td><td>低</td></tr></tbody></table>
+      <h3 style="font-size:0.9rem;color:var(--muted)">讨论纪要</h3>
+      <ul><li class='muted'>（无讨论纪要 — 见 templates/03）</li></ul>
+    </section>
+
+    <section>
+      <h2>专家队评审</h2>
+      <div class="teams"><article class="team"><header><h3>career_strategy</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>「仿真+封装」叙事与部分硬件/结构岗相交，适合作为**组合标签**而非窄口径。</li><li>不宜在未验证 JD 池前承诺「主攻」。</li></ul><h4>Conflicts</h4><ul><li>vs resume_packaging：包装可先行的乐观度</li></ul></article><article class="team"><header><h3>critical_assumption</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>见 `06_critical_assumption_check.md` 表 A1–A5。</li></ul><h4>Conflicts</h4><ul><li>无</li></ul></article><article class="team"><header><h3>evidence_audit</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>jd_matching</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>jury_panel</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>market_reality</h3><span class="pill">MODIFY</span></header><p class="muted">confidence: low</p><h4>Findings</h4><ul><li>样例 JD 不足以代表池子；**必须**扩样本到 ≥20 再谈「主攻」。</li></ul><h4>Conflicts</h4><ul><li>vs career_strategy：策略偏乐观，市场偏保守</li></ul></article><article class="team"><header><h3>resume_packaging</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article><article class="team"><header><h3>simulation_engineering</h3><span class="pill">RECOMMENDED_WITH_MODIFICATIONS</span></header><p class="muted">confidence: medium</p><h4>Findings</h4><ul><li>支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。</li></ul><h4>Conflicts</h4><ul><li>见 03_debate_session.md</li></ul></article></div>
+    </section>
+
+    <section>
+      <h2>关键前提（CAC）</h2>
+      <table><thead><tr><th>A1</th><th>目标地域 3 个月内存在 ≥15 条可投「对口」JD</th><th>unknown</th><th>Phase1 收集+分桶</th><th>从 RWM 降为 MODIFY/REJECT 主轴</th></tr></thead><tbody><tr><td>A2</td><td>JD 学历/年限门槛用户可满足 ≥60% 样本</td><td>inference</td><td>逐条标注</td><td>改推相邻岗族</td></tr><tr><td>A3</td><td>简历能在 2 个项目内表达仿真/封装相关交付</td><td>inference</td><td>resume_packaging 对照 JD</td><td>先改简历再谈方向</td></tr><tr><td>A4</td><td>纯仿真岗占比 &lt;40%（否则竞争过激）</td><td>unknown</td><td>分桶统计</td><td>改组合策略</td></tr><tr><td>A5</td><td>存在比「仿真主轴」更优的相邻方向（器件/可靠性）</td><td>unknown</td><td>同事位族对比矩阵</td><td>可能翻转主轴</td></tr></tbody></table>
+    </section>
+
+    <section>
+      <h2>分析产出</h2>
+      <div class="output"><a href="../outputs/jd_pool_phase1.md"><strong>JD Pool Phase1（金样例 mock 摘要）</strong></a><p>| bucket | count |</p></div>
+    </section>
+
+    <section>
+      <h2>下一步</h2>
+      <div class="todo">见 CASE_TODO.md</div>
+    </section>
+
+    <footer>
+      Generated by scripts/render_case_dashboard.py · data embedded for offline use.
+    </footer>
+  </div>
+  <script type="application/json" id="case-data">{"case_id": "CASE-001-mems-career-direction", "case_dir": "cases/samples/CASE-001-mems-career-direction", "status": "completed", "topic": "是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集", "case_type": "career_direction", "risk_tier": "high", "court_verdict_tier": "RECOMMENDED_WITH_MODIFICATIONS", "auth": {"needs_execution": true, "execution_authorized": true, "authorized_phase": "phase1", "human_approval_required": false}, "steps": [{"key": "owner_intent", "file": "00_owner_intent.md", "label": "原始意图", "present": true}, {"key": "case_intake", "file": "01_case_intake.md", "label": "案件定义", "present": true}, {"key": "team_selection", "file": "02_team_selection.md", "label": "团队选择理由", "present": true}, {"key": "mode_selection", "file": "02b_mode_selection.md", "label": "模式选择理由", "present": true}, {"key": "debate_session", "file": "03_debate_session.md", "label": "辩论记录", "present": true}, {"key": "court_summary", "file": "05_court_summary.md", "label": "汇总 verdict", "present": true}, {"key": "cac", "file": "06_critical_assumption_check.md", "label": "关键前提检查", "present": true}, {"key": "decision", "file": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "present": true}, {"key": "phase_plan", "file": "08_phase_plan.md", "label": "Phase 规划", "present": true}, {"key": "instruction", "file": "09_executor_instruction.md", "label": "执行任务书", "present": true}, {"key": "feedback", "file": "10_execution_feedback.md", "label": "执行反馈", "present": true}, {"key": "acceptance", "file": "11_acceptance_review.md", "label": "验收结果", "present": true}, {"key": "lesson", "file": "12_lesson_proposal.md", "label": "lesson proposal", "present": true}], "debate": {"modes": [], "minutes": [], "conflict_tables": [[["parallel_debate", "8 teams", "见 artifacts/team_blocks/"], ["career_fit_matrix", "jd_matching, resume_packaging, market_reality", "矩阵见下"], ["cross_team_conflict_detector", "all", "1 条 major：包装 vs 市场"], ["jury_panel", "jury_panel", "→ 05"]], [["封装/先进封装", "中", "中", "高", "低"], ["器件/MEMS 工艺", "中-低", "低-中", "高", "低"], ["CAE/结构仿真", "中-高", "中", "很高", "低"], ["混合（器件+仿真）", "中", "中", "中", "低"]]], "focus": ""}, "cac_tables": [[["A1", "目标地域 3 个月内存在 ≥15 条可投「对口」JD", "unknown", "Phase1 收集+分桶", "从 RWM 降为 MODIFY/REJECT 主轴"], ["A2", "JD 学历/年限门槛用户可满足 ≥60% 样本", "inference", "逐条标注", "改推相邻岗族"], ["A3", "简历能在 2 个项目内表达仿真/封装相关交付", "inference", "resume_packaging 对照 JD", "先改简历再谈方向"], ["A4", "纯仿真岗占比 <40%（否则竞争过激）", "unknown", "分桶统计", "改组合策略"], ["A5", "存在比「仿真主轴」更优的相邻方向（器件/可靠性）", "unknown", "同事位族对比矩阵", "可能翻转主轴"]]], "teams": [{"team_id": "career_strategy", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["「仿真+封装」叙事与部分硬件/结构岗相交，适合作为**组合标签**而非窄口径。", "不宜在未验证 JD 池前承诺「主攻」。"], "conflicts": ["vs resume_packaging：包装可先行的乐观度"], "path": "team_blocks/career_strategy.md"}, {"team_id": "critical_assumption", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["见 `06_critical_assumption_check.md` 表 A1–A5。"], "conflicts": ["无"], "path": "team_blocks/critical_assumption.md"}, {"team_id": "evidence_audit", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/evidence_audit.md"}, {"team_id": "jd_matching", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jd_matching.md"}, {"team_id": "jury_panel", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/jury_panel.md"}, {"team_id": "market_reality", "tier": "MODIFY", "confidence": "low", "findings": ["样例 JD 不足以代表池子；**必须**扩样本到 ≥20 再谈「主攻」。"], "conflicts": ["vs career_strategy：策略偏乐观，市场偏保守"], "path": "team_blocks/market_reality.md"}, {"team_id": "resume_packaging", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/resume_packaging.md"}, {"team_id": "simulation_engineering", "tier": "RECOMMENDED_WITH_MODIFICATIONS", "confidence": "medium", "findings": ["支持「先 Phase1 证据」；反对无 JD 池的「主攻」结论。"], "conflicts": ["见 03_debate_session.md"], "path": "team_blocks/simulation_engineering.md"}], "outputs": [{"name": "jd_pool_phase1.md", "title": "JD Pool Phase1（金样例 mock 摘要）", "summary": "| bucket | count |", "path": "../outputs/jd_pool_phase1.md"}], "todo": "", "files": [{"rel": "00_owner_intent.md", "label": "原始意图", "href": "../00_owner_intent.md"}, {"rel": "01_case_intake.md", "label": "案件定义", "href": "../01_case_intake.md"}, {"rel": "02_team_selection.md", "label": "团队选择理由", "href": "../02_team_selection.md"}, {"rel": "02b_mode_selection.md", "label": "模式选择理由", "href": "../02b_mode_selection.md"}, {"rel": "03_debate_session.md", "label": "辩论记录", "href": "../03_debate_session.md"}, {"rel": "05_court_summary.md", "label": "汇总 verdict", "href": "../05_court_summary.md"}, {"rel": "06_critical_assumption_check.md", "label": "关键前提检查", "href": "../06_critical_assumption_check.md"}, {"rel": "07_orchestrator_decision.md", "label": "Orchestrator 决策", "href": "../07_orchestrator_decision.md"}, {"rel": "08_phase_plan.md", "label": "Phase 规划", "href": "../08_phase_plan.md"}, {"rel": "09_executor_instruction.md", "label": "执行任务书", "href": "../09_executor_instruction.md"}, {"rel": "10_execution_feedback.md", "label": "执行反馈", "href": "../10_execution_feedback.md"}, {"rel": "11_acceptance_review.md", "label": "验收结果", "href": "../11_acceptance_review.md"}, {"rel": "12_lesson_proposal.md", "label": "lesson proposal", "href": "../12_lesson_proposal.md"}]}</script>
+</body>
+</html>

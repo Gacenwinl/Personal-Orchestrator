@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Harness Cases Index</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1419; color: #e7ecf3; padding: 24px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #2d3a4f; padding: 10px; text-align: left; }
+    th { color: #8b9cb3; }
+    a { color: #3d8bfd; }
+    .muted { color: #8b9cb3; }
+  </style>
+</head>
+<body>
+  <h1>Personal-Orchestrator Cases</h1>
+  <p class="muted">运行 <code>python3 scripts/render_case_dashboard.py --index</code> 刷新</p>
+  <table>
+    <thead><tr><th>目录</th><th>case_id</th><th>status</th><th>topic</th><th>看板</th></tr></thead>
+    <tbody><tr><td>active</td><td><code>CASE-20260603-mems-phase2-resume-jd-match</code></td><td>instruction_issued</td><td>在 CASE-001 Phase1 结论与 JD 池证据基础上，评估是否进入 Phase2（方向决策 / 简历与 JD 匹配深化）</td><td><a href="active/CASE-20260603-mems-phase2-resume-jd-match/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>active</td><td><code>CASE-20260603-msc-us-phd-agent-pi-outreach</code></td><td>orchestrator_decided</td><td>转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）</td><td><a href="active/CASE-20260603-msc-us-phd-agent-pi-outreach/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>samples</td><td><code>CASE-001-mems-career-direction</code></td><td>completed</td><td>是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集</td><td><a href="samples/CASE-001-mems-career-direction/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr></tbody>
+  </table>
+</body>
+</html>

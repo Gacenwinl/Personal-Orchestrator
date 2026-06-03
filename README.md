@@ -28,9 +28,19 @@
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
 7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 
-更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。
+更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。一页纸 SOP：[docs/SOP_ONE_PAGE.md](docs/SOP_ONE_PAGE.md)。
 
-**Phase 3（活跃案件 + 集成）：** 架构说明 [docs/PHASE3_ARCHITECTURE.md](docs/PHASE3_ARCHITECTURE.md)；当前审理中案件见 [cases/active/](cases/active/)（示例：`CASE-20260603-mems-phase2-resume-jd-match`）。
+**Phase 3（活跃案件 + 集成）：** 架构说明 [docs/PHASE3_ARCHITECTURE.md](docs/PHASE3_ARCHITECTURE.md)；当前审理中案件见 [cases/active/](cases/active/)。
+
+## 打开案件看板（可视化成品）
+
+```bash
+make dashboard CASE=cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach
+# 浏览器打开该目录下 artifacts/CASE_DASHBOARD.html
+```
+
+全部案件索引：`make dashboards` → [cases/index.html](cases/index.html)。  
+IDE 内 SOP 总览：打开 [orchestrator-sop.canvas.tsx](file:///Users/openclaw/.cursor/projects/Users-openclaw-Personal-Orchestrator-Harness/canvases/orchestrator-sop.canvas.tsx)（讨论过程在 03 + team_blocks，看板内聚合展示）。
 
 **工作流测试模型（当前默认）：** 小米 `xiaomi/mimo-v2.5-pro`，与 OpenClaw/Hermes 一致 → [docs/WORKFLOW_TEST_MIMO.md](docs/WORKFLOW_TEST_MIMO.md)。
 

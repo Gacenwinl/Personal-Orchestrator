@@ -41,6 +41,17 @@ flowchart TB
 | B 执行 | 08、09、inputs | 10（Executor）、11（Orchestrator） | 扩大 scope、写 approved lessons |
 | C 沉淀 | 11 | 12 → 审计 → `lessons/approved/` | Executor 直接改 SOUL/AGENTS |
 
+## 可视化层（成品视图）
+
+| 产物 | 生成方式 | 作用 |
+|------|----------|------|
+| `artifacts/CASE_DASHBOARD.html` | `scripts/render_case_dashboard.py` | 单案看板：链路、辩论、CAC、授权 |
+| `cases/index.html` | `--index` | 全部 active/samples 入口 |
+| `canvases/orchestrator-sop.canvas.tsx` | Cursor IDE | SOP 总览 + 可点击链路清单 |
+| `docs/SOP_ONE_PAGE.md` | 文档 | 一页纸命令与流程 |
+
+Markdown 仍是真源；HTML/Canvas 只读，修改案件后需重新生成看板。
+
 ## Phase 3 已交付（路线 A+B）
 
 ### 路线 A
