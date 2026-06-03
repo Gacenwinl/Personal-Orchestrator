@@ -1,0 +1,17 @@
+# Phase 1: 规则 + 手填；不调用 API
+principles:
+  - pro_and_con_should_use_different_vendors
+  - meta_review_uses_vendor_not_in_first_round
+  - evidence_audit_prefers_structured_fact_check_vendor
+  - jury_panel_prefers_stable_synthesis_vendor
+  - high_risk_requires_two_vendor_review_minimum
+
+assignments_by_role:
+  pro_debate: { vendor: anthropic, note: 正方 }
+  con_debate: { vendor: openai, note: 反方 }
+  meta_review: { vendor: google_or_manual, note: 未参与首轮 }
+  evidence_audit: { vendor: openai, note: 结构化核查 }
+  jury_panel: { vendor: anthropic, note: 综合表达 }
+  critical_assumption: { vendor: openai, note: 前提与翻转 }
+
+recording: memory/model_bias_notes.md

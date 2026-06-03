@@ -1,0 +1,25 @@
+team_id: resume_packaging
+domain: career
+mandate: 简历与项目表达
+applies_to_case_types:
+  - resume_revamp
+  - project_story
+excludes_case_types:
+  - technical_feasibility_only
+inputs:
+  - resume
+  - project_bullets
+outputs:
+  - packaging_advice
+  - claim_risk
+scoring_dimensions:
+  - credibility
+  - jd_alignment
+common_misjudgments:
+  - ['夸大未验证成果']
+recommended_model_profile:
+  vendor: anthropic
+  role: editorial
+conflicts_with:
+  - jd_matching
+  - technical_depth

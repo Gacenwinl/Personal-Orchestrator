@@ -1,0 +1,24 @@
+team_id: hr_screening
+domain: career
+mandate: HR 初筛视角
+applies_to_case_types:
+  - hr_lens
+  - screening
+excludes_case_types:
+  - deep_technical_route
+inputs:
+  - resume
+  - jd
+outputs:
+  - screen_pass_likelihood
+  - red_flags
+scoring_dimensions:
+  - screening_signal
+  - risk
+common_misjudgments:
+  - ['忽视空窗与跳转逻辑']
+recommended_model_profile:
+  vendor: openai
+  role: hr_simulation
+conflicts_with:
+  - interview_assessment

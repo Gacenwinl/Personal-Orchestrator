@@ -1,0 +1,26 @@
+# verdict × risk → 下一步（仍不自动 execution_authorized）
+mappings:
+  - verdict: REJECT
+    next: backlog_or_close
+    execution_authorized_default: false
+    human_approval_default: false
+  - verdict: MODIFY
+    next: revise_case_and_reconvene_court
+    execution_authorized_default: false
+    human_approval_default: false
+  - verdict: RECOMMENDED_WITH_MODIFICATIONS
+    next: complete_cac_then_limited_validation_phase
+    execution_authorized_default: false
+    human_approval_default: true
+  - verdict: RECOMMENDED
+    next: cac_then_phase_plan
+    execution_authorized_default: false
+    human_approval_default: true
+  - verdict: IMMEDIATELY_RECOMMENDED
+    next: cac_mandatory_then_owner_approval_for_execution
+    execution_authorized_default: false
+    human_approval_default: true
+
+notes:
+  - "IMMEDIATELY_RECOMMENDED does not set execution_authorized true"
+  - "External Executor may only start after 07 + human gate + 09"

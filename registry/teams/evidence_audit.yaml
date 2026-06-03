@@ -1,0 +1,24 @@
+team_id: evidence_audit
+domain: risk
+mandate: 证据与事实核查
+applies_to_case_types:
+  - all_high_stakes
+excludes_case_types:
+  - pure_brainstorm_low_risk
+inputs:
+  - claims
+  - sources
+outputs:
+  - evidence_grade
+  - missing_proof
+scoring_dimensions:
+  - fact
+  - inference
+  - unknown
+common_misjudgments:
+  - ['把推断当事实']
+recommended_model_profile:
+  vendor: openai
+  role: fact_check
+conflicts_with:
+  - critical_assumption

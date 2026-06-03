@@ -1,0 +1,31 @@
+# Court verdict tiers — 评审结论，非执行授权
+verdict_tiers:
+  - IMMEDIATELY_RECOMMENDED
+  - RECOMMENDED
+  - RECOMMENDED_WITH_MODIFICATIONS
+  - MODIFY
+  - REJECT
+
+court_summary_required_fields:
+  - case_id
+  - court_verdict_tier
+  - confidence
+  - summary
+  - key_risks
+  - dissent_or_conflicts
+  - recommended_next_step_non_executing
+
+team_verdict_block_required_fields:
+  - case_id
+  - team_id
+  - team_verdict_tier
+  - scores
+  - findings
+  - risks
+  - assumptions
+  - confidence
+  - conflicts_noted
+
+score_range:
+  min: 1
+  max: 5

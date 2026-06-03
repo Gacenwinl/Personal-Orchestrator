@@ -1,0 +1,48 @@
+rules:
+  - when:
+      case_type: career_direction
+      risk_tier: high
+    required_teams:
+      - career_strategy
+      - market_reality
+      - jd_matching
+      - resume_packaging
+      - simulation_engineering
+      - evidence_audit
+      - critical_assumption
+      - jury_panel
+    optional_teams:
+      - hr_screening
+      - cost_benefit
+      - human_approval
+    max_teams: 10
+  - when:
+      case_type: technical_route
+    required_teams:
+      - technical_depth
+      - simulation_engineering
+      - evidence_audit
+      - critical_assumption
+      - risk_control
+      - jury_panel
+    optional_teams:
+      - thermal_analysis
+      - electromagnetic_analysis
+      - chip_packaging
+      - test_validation
+  - when:
+      case_type: automation_design
+    required_teams:
+      - ai_workflow
+      - orchestrator_architecture
+      - automation_engineering
+      - agent_safety
+      - human_approval
+      - execution_handoff
+      - critical_assumption
+  - when:
+      pre_execution: true
+    add_required:
+      - execution_handoff
+      - agent_safety
+      - human_approval

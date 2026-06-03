@@ -1,0 +1,21 @@
+team_id: memory_system
+domain: ai
+mandate: 记忆与 lessons 治理
+applies_to_case_types:
+  - lesson_policy
+excludes_case_types:
+  - jd_match
+inputs:
+  - memory_design
+outputs:
+  - memory_verdict
+scoring_dimensions:
+  - auditability
+  - decay
+common_misjudgments:
+  - ['Executor 直写长期记忆']
+recommended_model_profile:
+  vendor: anthropic
+  role: policy
+conflicts_with:
+  - agent_safety

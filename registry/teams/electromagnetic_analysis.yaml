@@ -1,0 +1,21 @@
+team_id: electromagnetic_analysis
+domain: tech
+mandate: 电磁仿真专长
+applies_to_case_types:
+  - em_route
+excludes_case_types:
+  - resume_only
+inputs:
+  - em_tools
+  - jd_samples
+outputs:
+  - em_fit
+scoring_dimensions:
+  - domain_fit
+common_misjudgments:
+  - ['过度窄化求职面']
+recommended_model_profile:
+  vendor: openai
+  role: domain_expert
+conflicts_with:
+  - simulation_engineering

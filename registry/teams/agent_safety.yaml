@@ -1,0 +1,21 @@
+team_id: agent_safety
+domain: ai
+mandate: Agent 安全与越权
+applies_to_case_types:
+  - execution_handoff
+excludes_case_types:
+  - pure_writing
+inputs:
+  - tool_policy
+outputs:
+  - safety_verdict
+scoring_dimensions:
+  - scope
+  - forbidden
+common_misjudgments:
+  - ['扩大 scope']
+recommended_model_profile:
+  vendor: anthropic
+  role: safety
+conflicts_with:
+  - execution_handoff

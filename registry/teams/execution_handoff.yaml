@@ -1,0 +1,23 @@
+team_id: execution_handoff
+domain: risk
+mandate: 执行任务书审查
+applies_to_case_types:
+  - pre_hermes
+excludes_case_types:
+  - court_only
+inputs:
+  - draft_09
+outputs:
+  - handoff_verdict
+scoring_dimensions:
+  - clarity
+  - forbidden
+  - acceptance
+common_misjudgments:
+  - ['任务书含糊']
+recommended_model_profile:
+  vendor: anthropic
+  role: review
+conflicts_with:
+  - agent_safety
+  - human_approval

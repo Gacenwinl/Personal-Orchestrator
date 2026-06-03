@@ -1,0 +1,3 @@
+company,title,city,degree,years,bucket,job_url,jd_excerpt
+ExampleCo,封装工程师,上海,硕士,0-2,packaging,https://example.com/job/1,"负责先进封装工艺开发"
+ExampleCo,CAE仿真工程师,深圳,硕士,0-2,simulation_cae,https://example.com/job/2,"负责结构仿真与交付"

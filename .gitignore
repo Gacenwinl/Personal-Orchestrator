@@ -1,0 +1,5 @@
+cases/**/inputs/private/
+cases/**/outputs/live/
+.DS_Store
+__pycache__/
+.venv/

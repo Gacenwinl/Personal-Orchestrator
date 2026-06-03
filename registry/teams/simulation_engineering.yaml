@@ -1,0 +1,25 @@
+team_id: simulation_engineering
+domain: tech
+mandate: 仿真工程与岗位映射
+applies_to_case_types:
+  - career_direction
+  - sim_route
+excludes_case_types:
+  - legal_compliance
+inputs:
+  - sim_tools
+  - target_roles
+outputs:
+  - route_fit
+  - portfolio_gaps
+scoring_dimensions:
+  - engineering_fit
+  - job_mapping
+common_misjudgments:
+  - ['把学术算例当工程交付']
+recommended_model_profile:
+  vendor: anthropic
+  role: domain_expert
+conflicts_with:
+  - thermal_analysis
+  - chip_packaging

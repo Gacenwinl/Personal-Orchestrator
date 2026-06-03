@@ -1,0 +1,27 @@
+team_id: market_reality
+domain: career
+mandate: 市场供需与竞争
+applies_to_case_types:
+  - career_direction
+  - salary_expectation
+excludes_case_types:
+  - single_resume_line_edit
+inputs:
+  - region
+  - role_family
+  - time_horizon
+outputs:
+  - market_verdict
+  - competition_level
+scoring_dimensions:
+  - demand
+  - competition
+  - salary
+common_misjudgments:
+  - ['样本过少过度泛化']
+recommended_model_profile:
+  vendor: openai
+  role: market_research
+conflicts_with:
+  - career_strategy
+  - jd_matching

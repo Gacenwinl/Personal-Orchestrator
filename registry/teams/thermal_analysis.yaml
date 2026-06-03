@@ -1,0 +1,22 @@
+team_id: thermal_analysis
+domain: tech
+mandate: 热仿真专长
+applies_to_case_types:
+  - thermal_route
+excludes_case_types:
+  - career_branding
+inputs:
+  - thermal_tools
+  - jd_samples
+outputs:
+  - thermal_fit
+  - toolchain
+scoring_dimensions:
+  - domain_fit
+common_misjudgments:
+  - ['无关岗位硬套热仿真']
+recommended_model_profile:
+  vendor: openai
+  role: domain_expert
+conflicts_with:
+  - simulation_engineering

@@ -1,0 +1,22 @@
+team_id: jury_panel
+domain: risk
+mandate: 综合裁决与投票
+applies_to_case_types:
+  - court_closing
+excludes_case_types:
+  - raw_data_collection
+inputs:
+  - team_blocks
+outputs:
+  - panel_verdict
+  - dissent
+scoring_dimensions:
+  - coherence
+  - confidence
+common_misjudgments:
+  - ['被单一强势观点带偏']
+recommended_model_profile:
+  vendor: anthropic
+  role: synthesis
+conflicts_with:
+  - execution_handoff

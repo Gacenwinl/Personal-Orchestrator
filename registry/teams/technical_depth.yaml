@@ -1,0 +1,24 @@
+team_id: technical_depth
+domain: tech
+mandate: 技术深度与可证明性
+applies_to_case_types:
+  - technical_route
+  - resume_tech_claims
+excludes_case_types:
+  - pure_hr
+inputs:
+  - tech_stack
+  - projects
+outputs:
+  - depth_verdict
+  - proof_gaps
+scoring_dimensions:
+  - depth
+  - verifiability
+common_misjudgments:
+  - ['工具名堆砌无算例']
+recommended_model_profile:
+  vendor: anthropic
+  role: technical_review
+conflicts_with:
+  - simulation_engineering

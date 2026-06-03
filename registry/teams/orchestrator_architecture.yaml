@@ -1,0 +1,22 @@
+team_id: orchestrator_architecture
+domain: ai
+mandate: Orchestrator 分层架构
+applies_to_case_types:
+  - harness_design
+  - agent_topology
+excludes_case_types:
+  - single_jd
+inputs:
+  - architecture_sketch
+outputs:
+  - architecture_verdict
+scoring_dimensions:
+  - separation
+  - auditability
+common_misjudgments:
+  - ['陪审团与编排混淆']
+recommended_model_profile:
+  vendor: anthropic
+  role: architecture
+conflicts_with:
+  - agent_safety

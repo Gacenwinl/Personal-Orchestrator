@@ -1,0 +1,22 @@
+team_id: cost_benefit
+domain: risk
+mandate: 成本收益
+applies_to_case_types:
+  - resource_allocation
+excludes_case_types:
+  - safety_incident
+inputs:
+  - options
+  - costs
+outputs:
+  - cba_verdict
+scoring_dimensions:
+  - roi
+  - time
+common_misjudgments:
+  - ['忽视时间成本']
+recommended_model_profile:
+  vendor: openai
+  role: analyst
+conflicts_with:
+  - career_strategy

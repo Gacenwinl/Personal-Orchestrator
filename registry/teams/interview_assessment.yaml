@@ -1,0 +1,23 @@
+team_id: interview_assessment
+domain: career
+mandate: 面试考察面
+applies_to_case_types:
+  - interview_prep
+excludes_case_types:
+  - market_sizing
+inputs:
+  - jd
+  - resume
+outputs:
+  - interview_topics
+  - weak_areas
+scoring_dimensions:
+  - depth
+  - communication
+common_misjudgments:
+  - ['只背八股不结合项目']
+recommended_model_profile:
+  vendor: anthropic
+  role: interview_coach
+conflicts_with:
+  - technical_depth

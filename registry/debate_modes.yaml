@@ -1,0 +1,23 @@
+modes:
+  - id: dynamic_assembly
+    description: 按案件动态组队
+  - id: parallel_debate
+    description: 多团队并行独立评审
+  - id: adversarial_debate
+    description: 正反方对抗
+  - id: sequential_review
+    description: 串行审查
+  - id: jury_panel
+    description: 陪审团综合投票
+  - id: meta_review
+    description: 二次审查评审过程
+  - id: risk_priority_matrix
+    description: 风险优先级矩阵
+  - id: cross_team_conflict_detector
+    description: 跨团队冲突检测
+  - id: career_fit_matrix
+    description: 求职岗位匹配矩阵
+  - id: technical_feasibility_review
+    description: 技术路线可行性
+  - id: execution_handoff_review
+    description: 执行任务书审查

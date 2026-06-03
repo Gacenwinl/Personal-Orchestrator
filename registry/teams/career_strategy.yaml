@@ -1,0 +1,27 @@
+team_id: career_strategy
+domain: career
+mandate: 职业方向与路径策略
+applies_to_case_types:
+  - career_direction
+  - pivot_decision
+excludes_case_types:
+  - single_jd_match
+inputs:
+  - owner_background
+  - market_signals
+outputs:
+  - direction_verdict
+  - path_options
+  - risks
+scoring_dimensions:
+  - strategic_fit
+  - evidence
+  - actionability
+common_misjudgments:
+  - ['把短期风口当长期方向']
+recommended_model_profile:
+  vendor: anthropic
+  role: strategic_reasoning
+conflicts_with:
+  - market_reality
+  - resume_packaging

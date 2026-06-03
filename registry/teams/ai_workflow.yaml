@@ -1,0 +1,22 @@
+team_id: ai_workflow
+domain: ai
+mandate: AI 工具链与工作流
+applies_to_case_types:
+  - automation_design
+excludes_case_types:
+  - mems_career
+inputs:
+  - stack
+  - goals
+outputs:
+  - workflow_verdict
+scoring_dimensions:
+  - maintainability
+  - safety
+common_misjudgments:
+  - ['Automation 过度侵入生产']
+recommended_model_profile:
+  vendor: anthropic
+  role: systems
+conflicts_with:
+  - orchestrator_architecture

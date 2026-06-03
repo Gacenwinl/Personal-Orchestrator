@@ -1,0 +1,22 @@
+team_id: automation_engineering
+domain: ai
+mandate: 自动化实现与集成
+applies_to_case_types:
+  - integration_plan
+excludes_case_types:
+  - career_direction
+inputs:
+  - targets
+  - constraints
+outputs:
+  - implementation_risks
+scoring_dimensions:
+  - reversibility
+  - ops_cost
+common_misjudgments:
+  - ['一次脚本不可回滚']
+recommended_model_profile:
+  vendor: openai
+  role: engineering
+conflicts_with:
+  - human_approval

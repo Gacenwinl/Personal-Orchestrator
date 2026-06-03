@@ -1,0 +1,22 @@
+team_id: risk_control
+domain: risk
+mandate: 风险控制
+applies_to_case_types:
+  - high_risk
+  - automation
+excludes_case_types:
+  - low_risk
+inputs:
+  - plan
+outputs:
+  - risk_register
+scoring_dimensions:
+  - severity
+  - likelihood
+common_misjudgments:
+  - ['低估不可逆']
+recommended_model_profile:
+  vendor: anthropic
+  role: risk
+conflicts_with:
+  - human_approval

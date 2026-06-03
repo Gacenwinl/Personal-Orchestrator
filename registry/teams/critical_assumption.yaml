@@ -1,0 +1,24 @@
+team_id: critical_assumption
+domain: risk
+mandate: 关键前提识别与翻转
+applies_to_case_types:
+  - all_high_stakes
+  - recommended_plus
+excludes_case_types:
+inputs:
+  - court_summary
+  - claims
+outputs:
+  - assumption_list
+  - flip_conditions
+scoring_dimensions:
+  - materiality
+  - verifiability
+common_misjudgments:
+  - ['漏掉翻转前提']
+recommended_model_profile:
+  vendor: openai
+  role: structured_reasoning
+conflicts_with:
+  - evidence_audit
+  - jury_panel

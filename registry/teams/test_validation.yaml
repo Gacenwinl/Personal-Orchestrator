@@ -1,0 +1,21 @@
+team_id: test_validation
+domain: tech
+mandate: 测试验证与质量
+applies_to_case_types:
+  - validation_story
+excludes_case_types:
+  - market_reality
+inputs:
+  - test_exp
+  - jd
+outputs:
+  - validation_angle
+scoring_dimensions:
+  - credibility
+common_misjudgments:
+  - ['把测试经历说成研发主导']
+recommended_model_profile:
+  vendor: openai
+  role: domain_expert
+conflicts_with:
+  - technical_depth

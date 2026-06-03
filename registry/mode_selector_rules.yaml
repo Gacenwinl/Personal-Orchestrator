@@ -1,0 +1,34 @@
+rules:
+  - when:
+      case_type: career_direction
+      needs_execution: true
+    modes:
+      - dynamic_assembly
+      - parallel_debate
+      - career_fit_matrix
+      - cross_team_conflict_detector
+      - jury_panel
+    notes: 方向案先并行再矩阵收敛
+  - when:
+      case_type: career_direction
+      risk_tier: high
+    add_modes:
+      - meta_review
+    require_team: critical_assumption
+  - when:
+      case_type: technical_route
+    modes:
+      - technical_feasibility_review
+      - adversarial_debate
+      - risk_priority_matrix
+      - jury_panel
+  - when:
+      pre_execution: true
+    add_modes:
+      - execution_handoff_review
+    require_team: execution_handoff
+  - when:
+      internal_conflict_score_gte: 3
+    add_modes:
+      - cross_team_conflict_detector
+      - meta_review

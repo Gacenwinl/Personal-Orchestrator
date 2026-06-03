@@ -1,0 +1,22 @@
+team_id: chip_packaging
+domain: tech
+mandate: 封装与先进封装
+applies_to_case_types:
+  - packaging_route
+excludes_case_types:
+  - ai_workflow
+inputs:
+  - packaging_jds
+  - background
+outputs:
+  - packaging_fit
+scoring_dimensions:
+  - domain_fit
+  - demand
+common_misjudgments:
+  - ['封装岗量假设未验证']
+recommended_model_profile:
+  vendor: anthropic
+  role: domain_expert
+conflicts_with:
+  - market_reality

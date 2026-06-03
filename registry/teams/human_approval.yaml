@@ -1,0 +1,21 @@
+team_id: human_approval
+domain: ai
+mandate: 人工审批与闸门
+applies_to_case_types:
+  - high_risk_execution
+excludes_case_types:
+  - low_risk_research
+inputs:
+  - action_list
+outputs:
+  - approval_gates
+scoring_dimensions:
+  - safety
+  - compliance
+common_misjudgments:
+  - ['该批不批']
+recommended_model_profile:
+  vendor: openai
+  role: policy
+conflicts_with:
+  - risk_control

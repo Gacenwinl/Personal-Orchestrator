@@ -1,0 +1,27 @@
+team_id: jd_matching
+domain: career
+mandate: 岗位 JD 与背景匹配
+applies_to_case_types:
+  - jd_match
+  - batch_screening
+excludes_case_types:
+  - career_direction_only
+inputs:
+  - jd_text
+  - resume_summary
+outputs:
+  - match_score
+  - gap_list
+  - false_positive_flags
+scoring_dimensions:
+  - fit
+  - keyword_trap
+  - seniority
+common_misjudgments:
+  - ['关键词命中但职责不符']
+recommended_model_profile:
+  vendor: openai
+  role: structured_review
+conflicts_with:
+  - resume_packaging
+  - hr_screening
