@@ -1,4 +1,4 @@
-.PHONY: smoke dashboard dashboards sop-console court-launch \
+.PHONY: smoke dashboard dashboards sop-console hub court-launch \
         court-run workflow work-order hermes-setup hermes-doctor start fork
 
 smoke:
@@ -14,6 +14,9 @@ dashboards:
 
 sop-console:
 	python3 scripts/case_sop_server.py
+
+hub:
+	bash scripts/open_hub.sh
 
 court-launch:
 	@test -n "$(CASE)" || (echo "Usage: make court-launch CASE=cases/active/CASE-xxx" && exit 1)

@@ -13,15 +13,14 @@
 ## 快速开始
 
 ```bash
-# 1. 生成交互看板
+# 推荐：Web Hub（立案 + 看板 + API 一体）
+make hub
+# → http://127.0.0.1:8765/ → 点案件 →「向导」Tab
+
+# 离线备份：file:// 看板仍需 make sop-console 写回
 make dashboard CASE=cases/active/CASE-xxx
-
-# 2. 启动 SOP Console（仅本机）
 make sop-console
-
-# 3. 浏览器
 open cases/index.html
-# 进入案件 artifacts/CASE_DASHBOARD.html →「向导」Tab
 ```
 
 未启动 server 时看板仍可 **只读** 浏览；写回按钮会提示只读模式。

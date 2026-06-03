@@ -28,7 +28,7 @@
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
 7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 
-**日常操作：** [docs/OWNER_JOURNEY.md](docs/OWNER_JOURNEY.md) + 案件看板（`make start` / `make dashboard`）。
+**日常操作：** `make hub` → [docs/OWNER_JOURNEY.md](docs/OWNER_JOURNEY.md)（Web Hub + 可选 QQ `h cases`）。
 
 更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。一页纸 SOP：[docs/SOP_ONE_PAGE.md](docs/SOP_ONE_PAGE.md)。
 
@@ -43,7 +43,9 @@ make dashboard CASE=cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach
 
 全部案件索引：`make dashboards` → [cases/index.html](cases/index.html)。
 
-**Phase 4（交互 SOP）：** [docs/PHASE4_INTERACTIVE_SOP.md](docs/PHASE4_INTERACTIVE_SOP.md) — `make sop-console` 后看板「向导」Tab 可 PATCH / 复制口令 / 刷新；`make court-launch CASE=…` 生成法庭启动清单。
+**Phase 4（交互 SOP）：** [docs/PHASE4_INTERACTIVE_SOP.md](docs/PHASE4_INTERACTIVE_SOP.md) — 看板 PATCH / 授权。
+
+**Phase 6（Web Hub + QQ）：** [docs/PHASE6_WEB_HUB.md](docs/PHASE6_WEB_HUB.md) — `make hub` 零终端；QQ 见 [integrations/qq_harness_bridge.md](integrations/qq_harness_bridge.md)。
 
 IDE 内 SOP 总览：打开 [orchestrator-sop.canvas.tsx](file:///Users/openclaw/.cursor/projects/Users-openclaw-Personal-Orchestrator-Harness/canvases/orchestrator-sop.canvas.tsx)（讨论过程在 03 + team_blocks，看板内聚合展示）。
 

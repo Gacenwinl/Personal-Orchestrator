@@ -86,10 +86,14 @@ def main() -> int:
             "scripts/hermes_doctor.py",
             "scripts/start_case.py",
             "scripts/fork_case.py",
+            "scripts/harness_hub_cli.py",
             "scripts/test_case_chain_ux.py",
             "scripts/lib/case_chain.py",
             "scripts/lib/dashboard_owner.py",
             "scripts/lib/dashboard_wizard.py",
+            "scripts/lib/hub_api.py",
+            "scripts/lib/hub_jobs.py",
+            "scripts/lib/hub_page.py",
             "scripts/smoke_test.py",
         ]
     )

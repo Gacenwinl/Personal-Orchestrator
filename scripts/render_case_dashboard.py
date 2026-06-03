@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.case_chain import (  # noqa: E402
@@ -97,7 +98,7 @@ def parse_markdown_tables(text: str) -> list[list[list[str]]]:
     return tables
 
 
-def load_team_blocks(case_dir: Path) -> list[dict[str, Any]]:
+def load_team_blocks(case_dir: Path, hub_mode: bool = False) -> list[dict[str, Any]]:
     block_dir = case_dir / "artifacts" / "team_blocks"
     if not block_dir.is_dir():
         return []
@@ -114,13 +115,13 @@ def load_team_blocks(case_dir: Path) -> list[dict[str, Any]]:
                 "confidence": fm.get("confidence", "—"),
                 "findings": extract_bullets(extract_section(body, "Findings"), 6),
                 "conflicts": extract_bullets(extract_section(body, "Conflicts noted"), 4),
-                "path": href_from_dashboard(case_dir, path),
+                "path": href_from_dashboard(case_dir, path, hub_mode),
             }
         )
     return teams
 
 
-def load_outputs(case_dir: Path) -> list[dict[str, str]]:
+def load_outputs(case_dir: Path, hub_mode: bool = False) -> list[dict[str, str]]:
     out_dir = case_dir / "outputs"
     if not out_dir.is_dir():
         return []
@@ -143,14 +144,18 @@ def load_outputs(case_dir: Path) -> list[dict[str, str]]:
                 "name": path.name,
                 "title": title or path.stem,
                 "summary": summary,
-                "path": href_from_dashboard(case_dir, path),
+                "path": href_from_dashboard(case_dir, path, hub_mode),
             }
         )
     return rows
 
 
-def href_from_dashboard(case_dir: Path, target: Path) -> str:
+def href_from_dashboard(case_dir: Path, target: Path, hub_mode: bool = False) -> str:
     rel = target.relative_to(case_dir)
+    rel_posix = rel.as_posix()
+    if hub_mode:
+        case_rel = str(case_dir.relative_to(ROOT))
+        return f"/api/raw?path={quote(case_rel)}&file={quote(rel_posix)}"
     parts = rel.parts
     if parts and parts[0] == "artifacts" and len(parts) > 1:
         return Path(*parts[1:]).as_posix()
@@ -165,7 +170,7 @@ def rel_from_cases_index(case_dir: Path) -> str:
         return ""
 
 
-def build_case_data(case_dir: Path) -> dict[str, Any]:
+def build_case_data(case_dir: Path, hub_mode: bool = False) -> dict[str, Any]:
     intake = parse_frontmatter(case_dir / "01_case_intake.md")
     decision = parse_frontmatter(case_dir / "07_orchestrator_decision.md")
     chain = required_chain(case_dir, intake, decision)
@@ -224,12 +229,21 @@ def build_case_data(case_dir: Path) -> dict[str, Any]:
             else "",
         },
         "cac_tables": parse_markdown_tables(cac_body),
-        "teams": load_team_blocks(case_dir),
-        "outputs": load_outputs(case_dir),
+        "teams": load_team_blocks(case_dir, hub_mode),
+        "outputs": load_outputs(case_dir, hub_mode),
+        "hub_mode": hub_mode,
         "todo": todo_text[:1500],
         "has_missing": bool(missing),
         "files": [
-            {"rel": rel, "label": label, "href": Path("..", rel).as_posix()}
+            {
+                "rel": rel,
+                "label": label,
+                "href": (
+                    f"/api/raw?path={quote(str(case_dir.relative_to(ROOT)))}&file={quote(rel)}"
+                    if hub_mode
+                    else Path("..", rel).as_posix()
+                ),
+            }
             for _, rel, label in BASE_CHAIN
             if (case_dir / rel).is_file()
         ],
@@ -262,7 +276,8 @@ def gate_class(value: Any, good_when_true: bool = True) -> str:
     return "gate-neutral"
 
 
-def render_html(data: dict[str, Any]) -> str:
+def render_html(data: dict[str, Any], hub_mode: bool | None = None) -> str:
+    hub_mode = hub_mode if hub_mode is not None else bool(data.get("hub_mode"))
     auth = data["auth"]
     wizard = data.get("wizard") or {}
     steps_html = []
@@ -271,7 +286,11 @@ def render_html(data: dict[str, Any]) -> str:
     for step in data["steps"]:
         cls = "step ok" if step["present"] else "step miss"
         mark = "✓" if step["present"] else "○"
-        href = html.escape(f"../{step['file']}")
+        if hub_mode:
+            case_rel = quote(str(data.get("case_dir", "")))
+            href = html.escape(f"/api/raw?path={case_rel}&file={quote(step['file'])}")
+        else:
+            href = html.escape(f"../{step['file']}")
         steps_html.append(
             f'<div class="{cls}"><span class="mark">{mark}</span>'
             f'<a href="{href}">{html.escape(step["label"])}</a>'
@@ -322,10 +341,17 @@ def render_html(data: dict[str, Any]) -> str:
     automation = data.get("automation") or {}
     lc_label = LIFECYCLE_LABELS.get(lifecycle.get("lifecycle", ""), "")
     banner = wizard_banner_if_complete(lifecycle)
+    sop_api = "" if hub_mode else "http://127.0.0.1:8765"
+    hub_link = '<p class="muted"><a href="/">← 返回 Hub</a></p>' if hub_mode else ""
+    callout = (
+        "Web Hub 已连接：可 PATCH / 授权 / 触发法庭。"
+        if hub_mode
+        else "法庭 verdict ≠ 执行授权。交互写回需 <code>make sop-console</code>；否则本页只读。"
+    )
     wizard_html = wizard_panel_html(wizard, banner=banner)
-    owner_html = owner_next_panel_html(lifecycle, hermes)
-    court_html = court_panel_enhanced_html(wizard, lifecycle, automation)
-    wizard_js = wizard_script(case_rel, wizard, lifecycle)
+    owner_html = owner_next_panel_html(lifecycle, hermes, hub_mode=hub_mode)
+    court_html = court_panel_enhanced_html(wizard, lifecycle, automation, hub_mode=hub_mode)
+    wizard_js = wizard_script(case_rel, wizard, lifecycle, sop_api=sop_api, hub_mode=hub_mode)
 
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -505,7 +531,8 @@ def render_html(data: dict[str, Any]) -> str:
           <strong>human_approval_required</strong>{html.escape(str(auth.get("human_approval_required")))}
         </div>
       </div>
-      <p class="callout">法庭 verdict ≠ 执行授权。交互写回需 <code>make sop-console</code>；否则本页只读。</p>
+      {hub_link}
+      <p class="callout">{html.escape(callout) if not hub_mode else callout}</p>
     </header>
 
     <div class="tabs">
@@ -562,15 +589,20 @@ def render_html(data: dict[str, Any]) -> str:
 """
 
 
+def render_case_html(case_dir: Path, hub_mode: bool = False) -> str:
+    case_dir = case_dir.resolve()
+    data = build_case_data(case_dir, hub_mode=hub_mode)
+    sync_case_todo(case_dir, data.get("lifecycle") or {})
+    return render_html(data, hub_mode=hub_mode)
+
+
 def render_case(case_dir: Path, force: bool) -> Path:
     case_dir = case_dir.resolve()
     out = case_dir / "artifacts" / "CASE_DASHBOARD.html"
     if out.exists() and not force:
         raise FileExistsError(f"{out} exists; pass --force to overwrite")
     out.parent.mkdir(parents=True, exist_ok=True)
-    data = build_case_data(case_dir)
-    sync_case_todo(case_dir, data.get("lifecycle") or {})
-    out.write_text(render_html(data), encoding="utf-8")
+    out.write_text(render_case_html(case_dir, hub_mode=False), encoding="utf-8")
     return out
 
 

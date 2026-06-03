@@ -1,18 +1,20 @@
-# Owner 旅程（日常只看本文 + 看板）
+# Owner 旅程（日常只看本文 + Web Hub）
 
-> 硬规则仍以 [HARNESS_ENGINE.md](../constraints/HARNESS_ENGINE.md) 为准。本文只回答：**我现在该点哪、跑哪条命令**。
+> 硬规则仍以 [HARNESS_ENGINE.md](../constraints/HARNESS_ENGINE.md) 为准。本文只回答：**我现在该点哪**。
+
+**推荐入口：** `make hub` → 浏览器 `http://127.0.0.1:8765/`（见 [PHASE6_WEB_HUB.md](PHASE6_WEB_HUB.md)）。手机 QQ：`h cases` 等见 [integrations/qq_harness_bridge.md](../integrations/qq_harness_bridge.md)。
 
 ## 场景速查
 
 | 你想做什么 | 怎么做 |
 |------------|--------|
-| **新 topic，新文件夹** | `make start TOPIC='原话'` → 打开 [cases/index.html](../cases/index.html) → 点新案 Dashboard |
-| **同一 topic 干净重来** | `make fork FROM=cases/active/旧案 SLUG=fork-v2`（不要反复用旧案目录） |
-| **继续审理（补 md）** | Dashboard **向导** Tab → 复制口令到 Cursor |
-| **分析已结案（如 PhD 路径案）** | Dashboard **下一步** Tab（默认）→ 读 outputs / 补 inputs |
-| **批准 Hermes 执行** | `make sop-console` → 授权闸门；再写 `09` + handoff |
-| **自动法庭** | `make hermes-doctor` 全绿 → `make court-run CASE=…` |
-| **全自动六阶流** | `make workflow CASE=…`（在 AUTH 门会停住等你） |
+| **新 topic，新文件夹** | Hub 首页「新建案件」或 `make start` |
+| **同一 topic 干净重来** | Hub「Fork」或 `make fork FROM=…` |
+| **继续审理（补 md）** | Hub 打开案件 → **向导** Tab → 复制口令到 Cursor |
+| **分析已结案（如 PhD 路径案）** | **下一步** Tab（默认）→ 点 outputs 链接 |
+| **批准 Hermes 执行** | 看板授权闸门；QQ：`h authorize` → `confirm <token>` |
+| **自动法庭** | 看板「检测 Hermes」→「派发 court-dispatch」 |
+| **全自动六阶流** | 看板「workflow 单步」或终端 `make workflow` |
 
 ## 打开看板之后（分阶段）
 
@@ -36,16 +38,14 @@
 2. Owner 口头批准后：`make sop-console` → 授权闸门，或改 `07` 四字段。
 3. `make work-order CASE=…` → `render_handoff` → 本机 Hermes。
 
-## 命令只记 6 条
+## 命令只记 2 条（其余在 Hub 里点按钮）
 
 ```bash
-make start TOPIC='…'              # 新案 + 看板 + 索引
-make dashboard CASE=cases/active/CASE-xxx
-make sop-console                  # 本机写回（可选）
-make hermes-doctor                # Hermes 是否就绪
-make court-run CASE=…             # 自动并行法庭（需 doctor 通过）
-make workflow CASE=…            # 六阶 daemon
+make hub                          # 日常唯一入口
+make hermes-setup                 # 首次 Phase 5 前一次
 ```
+
+终端进阶：`make court-run`、`make workflow`、`make dashboard`（离线 html 备份）。
 
 ## 常见误区
 
@@ -61,8 +61,8 @@ make workflow CASE=…            # 六阶 daemon
 `cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach`
 
 ```bash
-make dashboard CASE=cases/active/CASE-20260603-msc-us-phd-agent-pi-outreach
-open cases/index.html
+make hub
+# 列表中打开 PhD 案 → 默认「下一步」Tab
 ```
 
-打开后应默认 **下一步** Tab，并看到 07 中的三条 Owner 行动项。
+应看到 07 中的三条 Owner 行动项与 outputs 链接。

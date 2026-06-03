@@ -1,6 +1,6 @@
 # SOP 一页纸 — Personal-Orchestrator-Harness
 
-> **Owner 日常：** 优先 [OWNER_JOURNEY.md](OWNER_JOURNEY.md) + 看板，本文作命令索引。
+> **Owner 日常：** `make hub` + [OWNER_JOURNEY.md](OWNER_JOURNEY.md)；QQ 见 [integrations/qq_harness_bridge.md](../integrations/qq_harness_bridge.md)。
 
 ## 角色
 
@@ -29,11 +29,10 @@ flowchart TD
 
 | 目的 | 命令 |
 |------|------|
-| **新案一键** | `make start TOPIC='…'` |
-| **同 topic 新目录** | `make fork FROM=cases/active/CASE-旧 SLUG=fork-v2` |
-| **案件看板** | `make dashboard CASE=cases/active/CASE-xxx` |
-| **索引** | `make dashboards` → `cases/index.html` |
-| **交互写回** | `make sop-console` |
+| **日常入口** | `make hub` → http://127.0.0.1:8765 |
+| **新案 / fork** | Hub 表单 或 `make start` / `make fork` |
+| **QQ 查案** | `h cases` / `h status`（需 Hub + harness-owner skill） |
+| **离线看板** | `make dashboard` / `cases/index.html` |
 | **Hermes 体检** | `make hermes-doctor` / `make hermes-setup` |
 | **法庭手册** | `make court-launch CASE=…` |
 | **法庭自动** | `make court-run CASE=…` |

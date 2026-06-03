@@ -36,26 +36,45 @@ def load_automation_artifacts(case_dir: Path) -> dict[str, Any]:
     return out
 
 
-def owner_next_panel_html(lifecycle: dict[str, Any], hermes: dict[str, Any]) -> str:
+def owner_next_panel_html(
+    lifecycle: dict[str, Any], hermes: dict[str, Any], hub_mode: bool = False
+) -> str:
     lc = lifecycle.get("lifecycle", "")
     label = LIFECYCLE_LABELS.get(lc, lc)
     headline = html.escape(str(lifecycle.get("headline", "")))
     case_rel = html.escape(str(lifecycle.get("case_dir", "")))
 
     actions_html = ""
+    case_rel_raw = str(lifecycle.get("case_dir", ""))
     for index, action in enumerate(lifecycle.get("owner_actions") or [], 1):
         href = action.get("path") or ""
-        link = (
-            f'<a href="../{html.escape(href)}">{html.escape(action.get("title", ""))}</a>'
-            if href and not href.startswith("http")
-            else html.escape(action.get("title", ""))
-        )
+        if href and not href.startswith("http"):
+            if hub_mode and case_rel_raw:
+                from urllib.parse import quote
+
+                link = (
+                    f'<a href="/api/raw?path={quote(case_rel_raw)}&file={quote(href)}">'
+                    f'{html.escape(action.get("title", ""))}</a>'
+                )
+            else:
+                link = (
+                    f'<a href="../{html.escape(href)}">'
+                    f'{html.escape(action.get("title", ""))}</a>'
+                )
+        else:
+            link = html.escape(action.get("title", ""))
         actions_html += f"<li>{index}. {link}</li>"
 
     outputs_html = ""
     for out in lifecycle.get("outputs") or []:
+        href = out.get("href", "")
+        if hub_mode and case_rel_raw and href.startswith("../"):
+            from urllib.parse import quote
+
+            rel_file = href.removeprefix("../")
+            href = f"/api/raw?path={quote(case_rel_raw)}&file={quote(rel_file)}"
         outputs_html += (
-            f'<li><a href="{html.escape(out.get("href", ""))}">'
+            f'<li><a href="{html.escape(href)}">'
             f'{html.escape(out.get("title", out.get("name", "")))}</a></li>'
         )
 
@@ -91,15 +110,35 @@ def owner_next_panel_html(lifecycle: dict[str, Any], hermes: dict[str, Any]) -> 
       <div class="cmd-list">{cmds_html}</div>
 
       <h3 class="subhead">Hermes 自动化</h3>
-      <p class="hermes-status {hermes_class}">{hermes_msg}</p>
-      <p class="muted">自动法庭：<code>make hermes-doctor</code> 全绿后 <code>make court-run CASE={case_rel}</code><br>
-      手册排班：<code>make court-launch CASE={case_rel}</code>（仅生成 md，不调 API）</p>
+      <p class="hermes-status {hermes_class}" id="hermes-status-line">{hermes_msg}</p>
+      {hub_automation_buttons(case_rel, hub_mode)}
     </section>
     """
 
 
+def hub_automation_buttons(case_rel: str, hub_mode: bool) -> str:
+    if not hub_mode:
+        return (
+            f'<p class="muted">自动法庭：<code>make hermes-doctor</code> 全绿后 '
+            f'<code>make court-run CASE={case_rel}</code><br>'
+            f'手册排班：<code>make court-launch CASE={case_rel}</code>（仅生成 md）</p>'
+        )
+    return f"""
+      <div class="wizard-actions">
+        <button type="button" class="btn secondary" id="btn-hermes-doctor">检测 Hermes</button>
+        <button type="button" class="btn secondary" id="btn-court-launch">生成法庭手册</button>
+        <button type="button" class="btn" id="btn-court-dispatch">派发 court-dispatch</button>
+        <button type="button" class="btn secondary" id="btn-workflow-tick">workflow 单步</button>
+      </div>
+      <p class="muted">高级：<code>make court-run</code> 会启动长驻 kanban（终端）</p>
+    """
+
+
 def court_panel_enhanced_html(
-    wizard: dict[str, Any], lifecycle: dict[str, Any], automation: dict[str, Any]
+    wizard: dict[str, Any],
+    lifecycle: dict[str, Any],
+    automation: dict[str, Any],
+    hub_mode: bool = False,
 ) -> str:
     court_rows = ""
     for row in wizard.get("court_plan") or []:
@@ -127,16 +166,28 @@ def court_panel_enhanced_html(
             f"<pre class='api-log'>{html.escape(automation['daemon_log_tail'])}</pre>"
         )
 
-    case_rel = html.escape(str(lifecycle.get("case_dir", "")))
+    case_rel_raw = str(lifecycle.get("case_dir", ""))
+    case_rel = html.escape(case_rel_raw)
+    if hub_mode and case_rel_raw:
+        from urllib.parse import quote
+
+        plan_href = (
+            f"/api/raw?path={quote(case_rel_raw)}&file={quote('artifacts/COURT_LAUNCH_PLAN.md')}"
+        )
+    else:
+        plan_href = "../artifacts/COURT_LAUNCH_PLAN.md"
+    court_btns = hub_automation_buttons(case_rel, hub_mode) if hub_mode else (
+        f"<p><strong>生成手册</strong>：<code>make court-launch CASE={case_rel}</code></p>"
+        f"<p><strong>自动并行</strong>：<code>make court-run CASE={case_rel}</code></p>"
+    )
     return f"""
     <section id="panel-court" class="tab-panel">
       <h2>法庭</h2>
-      <p><strong>生成手册</strong>（Cursor 多 Session）：<code>make court-launch CASE={case_rel}</code></p>
-      <p><strong>自动并行</strong>（Hermes kanban）：<code>make court-run CASE={case_rel}</code></p>
+      {court_btns}
       {auto_bits}
       <table><thead><tr><th>team_id</th><th>block</th><th>status</th></tr></thead>
       <tbody>{court_rows or "<tr><td colspan='3' class='muted'>填写 02 后生成</td></tr>"}</tbody></table>
-      <p><a href="../artifacts/COURT_LAUNCH_PLAN.md">COURT_LAUNCH_PLAN.md</a></p>
+      <p><a href="{plan_href}">COURT_LAUNCH_PLAN.md</a></p>
     </section>
     """
 

@@ -76,7 +76,13 @@ def wizard_panel_html(wizard: dict[str, Any], banner: str = "") -> str:
 """
 
 
-def wizard_script(case_rel: str, wizard: dict[str, Any], lifecycle: dict[str, Any]) -> str:
+def wizard_script(
+    case_rel: str,
+    wizard: dict[str, Any],
+    lifecycle: dict[str, Any],
+    sop_api: str = SOP_API,
+    hub_mode: bool = False,
+) -> str:
     payload = json.dumps(
         {"case_dir": case_rel, "wizard": wizard, "lifecycle": lifecycle},
         ensure_ascii=False,
@@ -85,7 +91,8 @@ def wizard_script(case_rel: str, wizard: dict[str, Any], lifecycle: dict[str, An
     return f"""
 <script>
 (function() {{
-  const SOP_API = {json.dumps(SOP_API)};
+  const SOP_API = {json.dumps(sop_api)};
+  const HUB_MODE = {json.dumps(hub_mode)};
   const BOOT = {payload};
   const logEl = document.getElementById("api-log");
   const statusEl = document.getElementById("sop-status");
@@ -105,17 +112,19 @@ def wizard_script(case_rel: str, wizard: dict[str, Any], lifecycle: dict[str, An
   async function refreshWizard() {{
     try {{
       const state = await api("/api/case?path=" + encodeURIComponent(BOOT.case_dir));
-      statusEl.textContent = "SOP Console 已连接";
+      statusEl.textContent = HUB_MODE ? "Web Hub 已连接" : "SOP Console 已连接";
       statusEl.className = "muted ok";
       if (state.cursor_prompt) promptEl.value = state.cursor_prompt;
       const step = state.current_step || {{}};
       const link = document.getElementById("wizard-file-link");
       if (link && step.file) {{
-        link.href = "../" + step.file;
+        link.href = HUB_MODE
+          ? "/api/raw?path=" + encodeURIComponent(BOOT.case_dir) + "&file=" + encodeURIComponent(step.file)
+          : "../" + step.file;
         link.textContent = step.file;
       }}
     }} catch (e) {{
-      statusEl.textContent = "只读模式（未启动 make sop-console）";
+      statusEl.textContent = HUB_MODE ? "Hub API 不可用" : "只读模式（未启动 make sop-console）";
       statusEl.className = "muted";
     }}
   }}
@@ -218,6 +227,39 @@ def wizard_script(case_rel: str, wizard: dict[str, Any], lifecycle: dict[str, An
   }});
 
   refreshWizard();
+
+  function bindHubBtn(id, path, body) {{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("click", async () => {{
+      try {{
+        const data = await api(path, {{
+          method: "POST",
+          headers: {{ "Content-Type": "application/json" }},
+          body: JSON.stringify(body || {{ path: BOOT.case_dir }}),
+        }});
+        log(JSON.stringify(data).slice(0, 400));
+        if (id === "btn-hermes-doctor") {{
+          const line = document.getElementById("hermes-status-line");
+          if (line && data.summary) line.textContent = data.summary;
+        }}
+        if (data.job_id) log("job: " + data.job_id);
+      }} catch (e) {{ log(id + ": " + e.message); }}
+    }});
+  }}
+  if (HUB_MODE) {{
+    document.getElementById("btn-hermes-doctor")?.addEventListener("click", async () => {{
+      try {{
+        const data = await api("/api/hermes/doctor");
+        log("doctor: " + data.level);
+        const line = document.getElementById("hermes-status-line");
+        if (line) line.textContent = data.summary;
+      }} catch (e) {{ log(e.message); }}
+    }});
+    bindHubBtn("btn-court-launch", "/api/court-launch", {{ path: BOOT.case_dir }});
+    bindHubBtn("btn-court-dispatch", "/api/court-dispatch", {{ path: BOOT.case_dir }});
+    bindHubBtn("btn-workflow-tick", "/api/workflow/tick", {{ path: BOOT.case_dir }});
+  }}
 }})();
 </script>
 """

@@ -25,4 +25,11 @@ for p in court-team court-verify court-synthesize; do
     echo "WARN: skills install for $p — run manually if needed"
 done
 
-echo "Done. Run: python3 scripts/hermes_doctor.py"
+OWNER_SKILL="$ROOT/scripts/skills/harness-owner"
+if [[ -d "$OWNER_SKILL" ]]; then
+  echo "Installing harness-owner skill (default profile) ..."
+  "$HERMES" skills install "$OWNER_SKILL" 2>/dev/null || \
+    echo "WARN: harness-owner install — see integrations/qq_harness_bridge.md"
+fi
+
+echo "Done. Run: make hub && python3 scripts/hermes_doctor.py"

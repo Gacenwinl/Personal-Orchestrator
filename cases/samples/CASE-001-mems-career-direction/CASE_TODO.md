@@ -1,6 +1,6 @@
 # CASE-001-mems-career-direction 下一步
 
-> 自动生成于 2026-06-03T12:22:34Z · lifecycle: `completed`
+> 自动生成于 2026-06-03T12:36:18Z · lifecycle: `completed`
 
 案件链路已完成，可归档或提取 lesson。
 
