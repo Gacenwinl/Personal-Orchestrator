@@ -51,6 +51,8 @@
 
 ```bash
 python3 scripts/smoke_test.py
+# or
+make smoke
 ```
 
 ## 与 OpenClaw_Workspace 的关系
