@@ -1,6 +1,6 @@
 ---
 case_id: CASE-20260603-mems-phase2-resume-jd-match
-execution_authorized: false
+execution_authorized: true
 ---
 
 # Phase Plan
@@ -10,7 +10,7 @@ execution_authorized: false
 | phase | 目标 | 依赖 | 是否需授权 |
 |-------|------|------|------------|
 | phase1 | （前案 CASE-001）JD 池 20 条 + 分桶 | CASE-001 验收 | 已在金样例完成 |
-| phase2 | fit 矩阵、5 条 excerpt、简历 v2 草稿、方向决策备忘 | 06 B 系列 + Owner 批准 | **未授权** |
+| phase2 | fit 矩阵、5 条 excerpt、简历 v2 草稿、方向决策备忘 | 06 B 系列 + Owner 批准 | **已授权**（见 09） |
 
 ## Phase2 执行范围（授权后）
 

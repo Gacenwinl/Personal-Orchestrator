@@ -46,8 +46,9 @@ flowchart TB
 ### 路线 A
 
 - 案件：[cases/active/CASE-20260603-mems-phase2-resume-jd-match/](../cases/active/CASE-20260603-mems-phase2-resume-jd-match/)
-- 状态：`orchestrator_decided`
-- 授权：`execution_authorized: false`，`human_approval_required: true`
+- 状态：`instruction_issued`（Phase2 执行中）
+- 授权：`execution_authorized: true`，`authorized_phase: phase2`
+- 交接：`artifacts/HANDOFF_hermes_phase2.md`（手工交 Hermes）
 - 证据：自 CASE-001 复制的 Phase1 池（mock），见 `inputs/case001_reference.md`
 
 ### 路线 B
