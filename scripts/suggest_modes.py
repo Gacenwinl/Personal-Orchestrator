@@ -137,7 +137,13 @@ def unique_extend(target: list[str], items: list[str]) -> None:
             target.append(item)
 
 
-def suggest(case_dir: Path, registry_dir: Path, pre_execution: bool) -> int:
+def suggest(
+    case_dir: Path,
+    registry_dir: Path,
+    pre_execution: bool,
+    write: bool = False,
+    force: bool = False,
+) -> int:
     intake = parse_frontmatter(case_dir / "01_case_intake.md")
     rules = parse_mode_rules(registry_dir / "mode_selector_rules.yaml")
 
@@ -183,7 +189,72 @@ def suggest(case_dir: Path, registry_dir: Path, pre_execution: bool) -> int:
     else:
         print("  - none")
 
+    if write:
+        write_mode_selection(case_dir, matched, modes, required_teams, pre_execution, force)
+        print(f"\nwrote: {case_dir / '02b_mode_selection.md'}")
+
     return 0
+
+
+def write_mode_selection(
+    case_dir: Path,
+    matched: list[ModeRule],
+    modes: list[str],
+    required_teams: list[str],
+    pre_execution: bool,
+    force: bool,
+) -> None:
+    target = case_dir / "02b_mode_selection.md"
+    if target.exists() and not force:
+        raise FileExistsError(f"{target} already exists; pass --force to overwrite")
+
+    intake = parse_frontmatter(case_dir / "01_case_intake.md")
+    mode_lines = "\n".join(f"{index}. {mode}" for index, mode in enumerate(modes, 1))
+    if not mode_lines:
+        mode_lines = "1. TODO: no mode rule matched"
+
+    matched_lines = "\n".join(
+        f"- rule_{rule.index}: "
+        + ", ".join(f"{key}={value}" for key, value in rule.when.items())
+        + (f" — {rule.notes}" if rule.notes else "")
+        for rule in matched
+    )
+    required_team_lines = "\n".join(f"- {team}" for team in required_teams) or "- none"
+
+    target.write_text(
+        f"""---
+case_id: {intake.get('case_id')}
+rule_ref: registry/mode_selector_rules.yaml
+generated_by: scripts/suggest_modes.py
+pre_execution: {str(pre_execution).lower()}
+---
+
+# Mode Selection
+
+## 模式序列（有序）
+
+{mode_lines}
+
+## 选择理由
+
+{matched_lines}
+
+## 模式要求的团队
+
+{required_team_lines}
+
+## 预计时间成本
+
+- TODO: Orchestrator 结合案件复杂度填写。
+
+## 模型分配（Phase 1 手填，见 model_routing_rules.yaml）
+
+| 步骤 | vendor | 角色 |
+|------|--------|------|
+| TODO | TODO | TODO |
+""",
+        encoding="utf-8",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -199,10 +270,26 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also apply pre_execution rules for reviewing a draft executor instruction",
     )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write 02b_mode_selection.md draft into the case directory",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow --write to overwrite an existing 02b_mode_selection.md",
+    )
     args = parser.parse_args(argv)
 
     try:
-        return suggest(Path(args.case_dir), Path(args.registry_dir), args.pre_execution)
+        return suggest(
+            Path(args.case_dir),
+            Path(args.registry_dir),
+            args.pre_execution,
+            write=args.write,
+            force=args.force,
+        )
     except (OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

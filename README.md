@@ -22,9 +22,9 @@
 
 1. 读 [engine/ORCHESTRATOR_RUNBOOK.md](engine/ORCHESTRATOR_RUNBOOK.md)
 2. 对照金样例 [cases/samples/CASE-001-mems-career-direction/](cases/samples/CASE-001-mems-career-direction/)
-3. 用 `python3 scripts/new_case.py "你的 topic" --case-type career_direction --risk-tier high --needs-execution` 创建 `cases/active/CASE-xxx`
-4. 可用 `python3 scripts/suggest_teams.py cases/active/CASE-xxx` 辅助生成 `02_team_selection.md`
-5. 可用 `python3 scripts/suggest_modes.py cases/active/CASE-xxx` 辅助生成 `02b_mode_selection.md`
+3. 用 `python3 scripts/new_case.py "你的 topic" --case-type career_direction --risk-tier high --needs-execution --prepare` 创建 `cases/active/CASE-xxx`，并生成 `02`/`02b` 草稿
+4. 可用 `python3 scripts/suggest_teams.py cases/active/CASE-xxx --write --force` 重新生成 `02_team_selection.md`
+5. 可用 `python3 scripts/suggest_modes.py cases/active/CASE-xxx --write --force` 重新生成 `02b_mode_selection.md`
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
 7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 

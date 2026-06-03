@@ -7,10 +7,10 @@
 用法：
 
 ```bash
-python3 scripts/new_case.py "是否主攻 MEMS/封装/仿真方向？" --case-type career_direction --risk-tier high --needs-execution
+python3 scripts/new_case.py "是否主攻 MEMS/封装/仿真方向？" --case-type career_direction --risk-tier high --needs-execution --prepare
 ```
 
-输出新 case 目录路径。随后继续运行 `suggest_teams.py` 与 `suggest_modes.py`。
+输出新 case 目录路径。加 `--prepare` 时会同时生成 `02_team_selection.md` 与 `02b_mode_selection.md` 草稿。
 
 ## validate_case.py
 
@@ -45,6 +45,7 @@ python3 scripts/validate_case.py cases/samples/CASE-001-mems-career-direction
 ```bash
 python3 scripts/suggest_teams.py cases/samples/CASE-001-mems-career-direction
 python3 scripts/suggest_teams.py cases/samples/CASE-001-mems-career-direction --pre-execution
+python3 scripts/suggest_teams.py cases/active/CASE-xxx --write
 ```
 
 返回码：
@@ -62,6 +63,7 @@ python3 scripts/suggest_teams.py cases/samples/CASE-001-mems-career-direction --
 ```bash
 python3 scripts/suggest_modes.py cases/samples/CASE-001-mems-career-direction
 python3 scripts/suggest_modes.py cases/samples/CASE-001-mems-career-direction --pre-execution
+python3 scripts/suggest_modes.py cases/active/CASE-xxx --write
 ```
 
 返回码同 `suggest_teams.py`。

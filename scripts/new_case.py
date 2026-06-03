@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -150,6 +152,11 @@ def main() -> int:
     parser.add_argument("--needs-execution", action="store_true")
     parser.add_argument("--cases-root", default="cases/active")
     parser.add_argument("--slug", help="Optional path-safe case slug")
+    parser.add_argument(
+        "--prepare",
+        action="store_true",
+        help="Also generate 02_team_selection.md and 02b_mode_selection.md drafts",
+    )
     args = parser.parse_args()
 
     case_dir = create_case(
@@ -160,8 +167,20 @@ def main() -> int:
         cases_root=Path(args.cases_root),
         slug=args.slug,
     )
+    if args.prepare:
+        script_dir = Path(__file__).resolve().parent
+        run_helper(script_dir / "suggest_teams.py", case_dir)
+        run_helper(script_dir / "suggest_modes.py", case_dir)
+
     print(case_dir)
     return 0
+
+
+def run_helper(script: Path, case_dir: Path) -> None:
+    subprocess.run(
+        [sys.executable, str(script), str(case_dir), "--write"],
+        check=True,
+    )
 
 
 if __name__ == "__main__":

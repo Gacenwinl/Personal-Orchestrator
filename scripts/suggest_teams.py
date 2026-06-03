@@ -134,7 +134,13 @@ def unique_extend(target: list[str], items: list[str]) -> None:
             target.append(item)
 
 
-def suggest(case_dir: Path, registry_dir: Path, pre_execution: bool) -> int:
+def suggest(
+    case_dir: Path,
+    registry_dir: Path,
+    pre_execution: bool,
+    write: bool = False,
+    force: bool = False,
+) -> int:
     intake_path = case_dir / "01_case_intake.md"
     rules_path = registry_dir / "team_selector_rules.yaml"
 
@@ -194,7 +200,70 @@ def suggest(case_dir: Path, registry_dir: Path, pre_execution: bool) -> int:
             file=sys.stderr,
         )
 
+    if write:
+        write_team_selection(case_dir, matched, required, optional, force)
+        print(f"\nwrote: {case_dir / '02_team_selection.md'}")
+
     return 0
+
+
+def write_team_selection(
+    case_dir: Path,
+    matched: list[TeamRule],
+    required: list[str],
+    optional: list[str],
+    force: bool,
+) -> None:
+    target = case_dir / "02_team_selection.md"
+    if target.exists() and not force:
+        raise FileExistsError(f"{target} already exists; pass --force to overwrite")
+
+    selected_rows = "\n".join(
+        f"| {team} | TODO: Orchestrator 填写选择理由 |" for team in required
+    )
+    optional_rows = "\n".join(
+        f"| {team} | 可选：仅在证据不足或争议扩大时加入 |" for team in optional
+    )
+    if not optional_rows:
+        optional_rows = "| （无） | — |"
+
+    matched_lines = "\n".join(
+        f"- rule_{rule.index}: "
+        + ", ".join(f"{key}={value}" for key, value in rule.when.items())
+        for rule in matched
+    )
+
+    target.write_text(
+        f"""---
+case_id: {parse_frontmatter(case_dir / '01_case_intake.md').get('case_id')}
+rule_ref: registry/team_selector_rules.yaml
+generated_by: scripts/suggest_teams.py
+---
+
+# Team Selection
+
+## 选用团队
+
+| team_id | 理由 |
+|---------|------|
+{selected_rows}
+
+## 未选用/可选团队（Orchestrator 需人工补充未选理由）
+
+| team_id | 说明 |
+|---------|------|
+{optional_rows}
+
+## 规则命中
+
+{matched_lines}
+
+## 冲突预期
+
+- TODO: Orchestrator 根据 `conflicts_with` 与案件上下文填写。
+""",
+        encoding="utf-8",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -210,10 +279,26 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also apply pre_execution rules for reviewing a draft executor instruction",
     )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write 02_team_selection.md draft into the case directory",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow --write to overwrite an existing 02_team_selection.md",
+    )
     args = parser.parse_args(argv)
 
     try:
-        return suggest(Path(args.case_dir), Path(args.registry_dir), args.pre_execution)
+        return suggest(
+            Path(args.case_dir),
+            Path(args.registry_dir),
+            args.pre_execution,
+            write=args.write,
+            force=args.force,
+        )
     except (OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
