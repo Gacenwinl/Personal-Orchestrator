@@ -30,6 +30,8 @@
 
 更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。
 
+**Phase 3（活跃案件 + 集成）：** 架构说明 [docs/PHASE3_ARCHITECTURE.md](docs/PHASE3_ARCHITECTURE.md)；当前审理中案件见 [cases/active/](cases/active/)（示例：`CASE-20260603-mems-phase2-resume-jd-match`）。
+
 **工作流测试模型（当前默认）：** 小米 `xiaomi/mimo-v2.5-pro`，与 OpenClaw/Hermes 一致 → [docs/WORKFLOW_TEST_MIMO.md](docs/WORKFLOW_TEST_MIMO.md)。
 
 ## 目录
@@ -59,4 +61,4 @@ make smoke
 
 ## 与 OpenClaw_Workspace 的关系
 
-本仓库**独立**。求职执行仍走 `~/OpenClaw_Workspace/hermes`；本 Harness 产出 `09_executor_instruction.md` 后由你审批，再**手工**交给 Hermes（见 [integrations/hermes_handoff.md](integrations/hermes_handoff.md)）。
+本仓库**独立**。求职执行仍走 `~/OpenClaw_Workspace/hermes`；本 Harness 产出 `09_executor_instruction.md` 后由你审批，再**手工**交给 Hermes（见 [integrations/hermes_handoff.md](integrations/hermes_handoff.md)、[hermes_handoff_checklist.md](integrations/hermes_handoff_checklist.md)）。

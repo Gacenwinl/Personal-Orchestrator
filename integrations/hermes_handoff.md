@@ -1,5 +1,7 @@
 # Hermes Handoff（Phase 1：手工，不改 Hermes 源码）
 
+**交接前 checklist：** [hermes_handoff_checklist.md](hermes_handoff_checklist.md)（授权前/后、09 三节、OpenClaw 会话、禁止项）。
+
 ## 原则
 
 - Harness 产出 `09_executor_instruction.md`。
