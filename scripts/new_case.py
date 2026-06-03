@@ -130,10 +130,11 @@ cac_exempt_reason: null
         case_dir / "CASE_TODO.md",
         f"""# {case_id} 下一步
 
-1. 运行 `python3 scripts/suggest_teams.py {case_dir}`，填写 `02_team_selection.md`。
-2. 运行 `python3 scripts/suggest_modes.py {case_dir}`，填写 `02b_mode_selection.md`。
-3. 按 `engine/ORCHESTRATOR_RUNBOOK.md` 继续 03–12。
-4. 结案前运行 `python3 scripts/validate_case.py {case_dir}`。
+1. 审阅并补充 `02_team_selection.md` / `02b_mode_selection.md` 中的 TODO 理由。
+2. 审阅 `artifacts/team_blocks/*.md`，按各团队 registry 定义填写 04 结构。
+3. 按 `engine/ORCHESTRATOR_RUNBOOK.md` 继续 03、05–12。
+4. 授权执行后：`python3 scripts/render_handoff.py {case_dir}`
+5. 结案前：`python3 scripts/validate_case.py {case_dir}`
 """,
     )
 
@@ -169,16 +170,17 @@ def main() -> int:
     )
     if args.prepare:
         script_dir = Path(__file__).resolve().parent
-        run_helper(script_dir / "suggest_teams.py", case_dir)
-        run_helper(script_dir / "suggest_modes.py", case_dir)
+        run_helper(script_dir / "suggest_teams.py", case_dir, "--write")
+        run_helper(script_dir / "suggest_modes.py", case_dir, "--write")
+        run_helper(script_dir / "scaffold_team_blocks.py", case_dir)
 
     print(case_dir)
     return 0
 
 
-def run_helper(script: Path, case_dir: Path) -> None:
+def run_helper(script: Path, case_dir: Path, *extra: str) -> None:
     subprocess.run(
-        [sys.executable, str(script), str(case_dir), "--write"],
+        [sys.executable, str(script), str(case_dir), *extra],
         check=True,
     )
 

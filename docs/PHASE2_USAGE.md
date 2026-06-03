@@ -45,14 +45,26 @@ python3 scripts/suggest_modes.py cases/active/CASE-xxx --write --force
 
 ## 3. 继续审理
 
+```bash
+python3 scripts/scaffold_team_blocks.py cases/active/CASE-xxx
+```
+
 脚本只负责机械选择。Orchestrator 仍必须人工完成：
 
 1. 在 `02_team_selection.md` 中补充选用与未选理由。
 2. 在 `02b_mode_selection.md` 中补充时间成本与模型分配。
-3. 生成各团队 `artifacts/team_blocks/*.md`。
+3. 填写各团队 `artifacts/team_blocks/*.md`（可用 scaffold 生成骨架）。
 4. 汇总 `05_court_summary.md`。
 5. 高风险或 RECOMMENDED+ 案件填写 `06_critical_assumption_check.md`。
 6. 在 `07_orchestrator_decision.md` 中明确执行授权四字段。
+
+## 3b. 交给 Hermes（仅授权后）
+
+```bash
+python3 scripts/render_handoff.py cases/active/CASE-xxx
+```
+
+将生成的 `artifacts/HANDOFF_hermes_phase1.md` **手工**复制到 Hermes 会话。见 [integrations/hermes_handoff.md](../integrations/hermes_handoff.md)。
 
 ## 4. 结案前校验
 

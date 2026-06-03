@@ -8,10 +8,16 @@
 
 ## 建议步骤
 
-1. 确认 `execution_authorized: true` 且 `authorized_phase` 匹配。
-2. 将 `09` 中 forbidden_actions 与 Hermes profile（如 jobintel）白名单对照。
-3. 优先 `no_agent` + 脚本形态（若仅为 JD 收集），避免长 agent turn。
-4. 执行后要求 Hermes 只填 Harness `10_execution_feedback.md` 对应字段到约定路径。
+1. 在本仓库生成交接包：
+
+```bash
+python3 scripts/render_handoff.py cases/active/CASE-xxx
+```
+
+2. 确认 `execution_authorized: true` 且 `authorized_phase` 匹配。
+3. 将 `09` 中 forbidden_actions 与 Hermes profile（如 jobintel）白名单对照。
+4. 优先 `no_agent` + 脚本形态（若仅为 JD 收集），避免长 agent turn。
+5. 执行后要求 Hermes 只填 Harness `10_execution_feedback.md` 对应字段到约定路径。
 
 ## 禁止（第一阶段）
 

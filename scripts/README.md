@@ -24,6 +24,32 @@ python3 scripts/case_status.py cases/samples/CASE-001-mems-career-direction
 python3 scripts/check_registry.py
 ```
 
+## list_cases.py
+
+列出 `cases/active` 与 `cases/samples` 下的案件及 `status` / `risk_tier`。
+
+```bash
+python3 scripts/list_cases.py
+```
+
+## scaffold_team_blocks.py
+
+根据 `02_team_selection.md` 的「选用团队」表，为每个 team 生成 `artifacts/team_blocks/<team_id>.md` 骨架。
+
+```bash
+python3 scripts/scaffold_team_blocks.py cases/active/CASE-xxx
+python3 scripts/scaffold_team_blocks.py cases/active/CASE-xxx --force
+```
+
+## render_handoff.py
+
+从 `09_executor_instruction.md` 生成 Hermes 交接包（不自动执行、不建 cron）。
+
+```bash
+python3 scripts/render_handoff.py cases/active/CASE-xxx
+python3 scripts/render_handoff.py cases/samples/CASE-001-mems-career-direction --force
+```
+
 ## check_templates.py
 
 校验 `templates/` 内 00–12 核心模板是否齐全，并检查关键授权/验收/lesson 字段是否存在。
