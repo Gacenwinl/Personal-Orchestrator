@@ -31,6 +31,12 @@ def main() -> int:
     run(
         [
             python,
+            "scripts/check_templates.py",
+        ]
+    )
+    run(
+        [
+            python,
             "scripts/validate_case.py",
             "cases/samples/CASE-001-mems-career-direction",
         ]
@@ -67,6 +73,7 @@ def main() -> int:
             "scripts/new_case.py",
             "scripts/case_status.py",
             "scripts/check_registry.py",
+            "scripts/check_templates.py",
             "scripts/smoke_test.py",
         ]
     )
