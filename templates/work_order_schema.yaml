@@ -1,0 +1,69 @@
+# Structured Work Order Schema — Personal-Orchestrator-Harness
+# 由 scripts/build_work_order.py 从 09_executor_instruction.md 生成 JSON
+# 原文参考：wjjAGI《Hermes-Agent 生产级实战》§四（工单系统）
+
+required_fields:
+  - task_id            # 格式：{case_id}-{phase}-{yyyymmdd}
+  - case_id
+  - phase              # phase1 / phase2 / …
+  - executor_type      # hermes / openclaw / manual
+  - delivery_profile   # hermes profile 名（如 jobchief / default）
+  - created_at         # ISO 8601
+  - harness_root       # Harness 仓库绝对路径
+
+context_fields:
+  # 背景：前序步骤产物（原文 §四：task_context）
+  - execution_context:
+      description: "前序步骤结论摘要（来自 05_court_summary + 07_decision）"
+      max_chars: 2000
+  - upstream_depends_on:
+      description: "上游产物文件路径列表"
+      type: list[str]
+  - downstream_gates:
+      description: "下游步骤依赖项（下一步需要本步什么输出才能继续）"
+      type: list[str]
+
+goal_fields:
+  # 目标：原文 §四：task_goal（primary + secondary）
+  - goals:
+      primary: ""      # 主要交付物，一句话
+      secondary: []    # 可选补充目标，列表
+
+constraint_fields:
+  # 约束（原文 §四：task_constraints）
+  - hard_constraints:   # 绝对禁止（来自 09 forbidden_actions）
+      type: list[str]
+  - soft_constraints:   # 编码偏好、技术选型倾向
+      type: list[str]
+
+acceptance_fields:
+  # 验收（原文 §四：task_acceptance）
+  - acceptance_criteria:
+      description: "Orchestrator 将据此填 11_acceptance_review"
+      type: list[str]
+
+failure_fields:
+  # 失败策略（原文 §四：task_failure_strategy）
+  - failure_strategy:
+      timeout_action: "stop and report to Orchestrator"     # 超时/挂起时
+      under_delivery_action: "partial output + gap log"     # 产出不达标时
+      loop_threshold: 3                                      # 相同错误连续次数触发停止
+      loop_action: "stop + write daemon_error.log"
+
+rollback_fields:
+  # 回退（原文 §四：task_rollback）
+  - rollback_to:
+      description: "发生不可恢复错误时回退到的案件状态检查点"
+      checkpoint_file: ""    # 通常是 01_case_intake.md 或上一个已知 OK 的文件
+
+output_fields:
+  # 输出规格
+  - output_files:
+      type: list[{path: str, format: str, required_fields: list[str]}]
+  - write_to:    # 允许写入的目录前缀（白名单）
+      - "cases/"
+
+metadata_fields:
+  - harness_version: "phase5"
+  - schema_version: "1.0"
+  - not_an_execution_authorization: true   # 工单 ≠ execution_authorized

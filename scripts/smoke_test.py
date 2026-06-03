@@ -80,12 +80,21 @@ def main() -> int:
             "scripts/render_case_dashboard.py",
             "scripts/case_sop_server.py",
             "scripts/court_launcher.py",
+            "scripts/court_dispatch.py",
+            "scripts/workflow_daemon.py",
+            "scripts/build_work_order.py",
             "scripts/lib/case_chain.py",
             "scripts/lib/dashboard_wizard.py",
             "scripts/smoke_test.py",
         ]
     )
     run([python, "scripts/case_sop_server.py", "--check"])
+    run([python, "scripts/court_dispatch.py",
+         "cases/samples/CASE-001-mems-career-direction", "--check"])
+    run([python, "scripts/workflow_daemon.py",
+         "--case", "cases/samples/CASE-001-mems-career-direction", "--check"])
+    run([python, "scripts/build_work_order.py",
+         "cases/samples/CASE-001-mems-career-direction", "--check"])
 
     with tempfile.TemporaryDirectory() as tmp:
         case_dir = Path(tmp) / f"CASE-{TODAY}-smoke-test"
