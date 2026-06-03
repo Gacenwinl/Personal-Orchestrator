@@ -1,5 +1,14 @@
 cases/**/inputs/private/
 cases/**/outputs/live/
+
+# 密钥与本地环境（切勿提交）
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+auth.json
+
 .DS_Store
 __pycache__/
 .venv/
