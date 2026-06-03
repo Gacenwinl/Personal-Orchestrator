@@ -23,8 +23,10 @@
 1. 读 [engine/ORCHESTRATOR_RUNBOOK.md](engine/ORCHESTRATOR_RUNBOOK.md)
 2. 对照金样例 [cases/samples/CASE-001-mems-career-direction/](cases/samples/CASE-001-mems-career-direction/)
 3. 复制 `templates/` 到新目录 `cases/active/CASE-xxx/`，从 `01_case_intake.md` 开始逐步填写
-4. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
-5. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
+4. 可用 `python3 scripts/suggest_teams.py cases/active/CASE-xxx` 辅助生成 `02_team_selection.md`
+5. 可用 `python3 scripts/suggest_modes.py cases/active/CASE-xxx` 辅助生成 `02b_mode_selection.md`
+6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
+7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 
 ## 目录
 
