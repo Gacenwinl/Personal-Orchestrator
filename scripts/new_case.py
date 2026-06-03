@@ -174,7 +174,11 @@ def main() -> int:
         run_helper(script_dir / "suggest_modes.py", case_dir, "--write")
         run_helper(script_dir / "scaffold_team_blocks.py", case_dir)
 
+    rel = case_dir.relative_to(Path.cwd()) if case_dir.is_relative_to(Path.cwd()) else case_dir
     print(case_dir)
+    print(f"\n下一步: make dashboard CASE={rel}")
+    print(f"打开索引: open cases/index.html")
+    print("可选: make sop-console")
     return 0
 
 

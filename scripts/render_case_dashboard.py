@@ -7,6 +7,7 @@ import argparse
 import html
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -16,16 +17,43 @@ from lib.case_chain import (  # noqa: E402
     BASE_CHAIN,
     ROOT,
     chain_progress,
+    derive_owner_lifecycle,
     get_wizard_state,
     load_wizard_registry,
     parse_frontmatter,
     required_chain,
+    sync_case_todo,
+)
+from lib.dashboard_owner import (  # noqa: E402
+    LIFECYCLE_LABELS,
+    OWNER_EXTRA_CSS,
+    court_panel_enhanced_html,
+    load_automation_artifacts,
+    owner_next_panel_html,
+    wizard_banner_if_complete,
 )
 from lib.dashboard_wizard import (  # noqa: E402
     WIZARD_EXTRA_CSS,
     wizard_panel_html,
     wizard_script,
 )
+
+
+def fetch_hermes_status() -> dict[str, Any]:
+    script = ROOT / "scripts" / "hermes_doctor.py"
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script), "--json"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return json.loads(result.stdout)
+    except (json.JSONDecodeError, subprocess.TimeoutExpired, OSError):
+        pass
+    return {"level": "warn", "summary": "Hermes 状态未检测（可运行 make hermes-doctor）"}
 
 
 def extract_section(body: str, heading: str) -> str:
@@ -161,9 +189,12 @@ def build_case_data(case_dir: Path) -> dict[str, Any]:
     todo_text = todo_path.read_text(encoding="utf-8") if todo_path.is_file() else ""
 
     wizard = get_wizard_state(case_dir)
+    lifecycle = wizard.get("lifecycle") or derive_owner_lifecycle(case_dir)
     reg = load_wizard_registry()
     step_cfg = (reg.get("steps") or {}).get(wizard["current_step"]["key"], {})
     wizard["cli_hint"] = step_cfg.get("cli_hint", "")
+    automation = load_automation_artifacts(case_dir)
+    hermes = fetch_hermes_status()
 
     _, missing, _, _ = chain_progress(case_dir)
 
@@ -178,6 +209,9 @@ def build_case_data(case_dir: Path) -> dict[str, Any]:
         "auth": wizard["auth"],
         "steps": steps,
         "wizard": wizard,
+        "lifecycle": lifecycle,
+        "automation": automation,
+        "hermes": hermes,
         "next_action": wizard["next_action"],
         "debate": {
             "modes": extract_bullets(extract_section(debate_body, "模式执行记录") or debate_body, 8),
@@ -283,8 +317,15 @@ def render_html(data: dict[str, Any]) -> str:
     next_action = html.escape(str(data.get("next_action", "")))
     case_rel = str(data.get("case_dir", ""))
 
-    wizard_html = wizard_panel_html(wizard)
-    wizard_js = wizard_script(case_rel, wizard)
+    lifecycle = data.get("lifecycle") or {}
+    hermes = data.get("hermes") or {}
+    automation = data.get("automation") or {}
+    lc_label = LIFECYCLE_LABELS.get(lifecycle.get("lifecycle", ""), "")
+    banner = wizard_banner_if_complete(lifecycle)
+    wizard_html = wizard_panel_html(wizard, banner=banner)
+    owner_html = owner_next_panel_html(lifecycle, hermes)
+    court_html = court_panel_enhanced_html(wizard, lifecycle, automation)
+    wizard_js = wizard_script(case_rel, wizard, lifecycle)
 
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -435,6 +476,7 @@ def render_html(data: dict[str, Any]) -> str:
       font-size: 0.9rem;
     }}
     {WIZARD_EXTRA_CSS}
+    {OWNER_EXTRA_CSS}
   </style>
 </head>
 <body>
@@ -447,6 +489,7 @@ def render_html(data: dict[str, Any]) -> str:
         <span class="badge">verdict: {html.escape(str(data.get("court_verdict_tier")))}</span>
         <span class="badge">risk: {html.escape(str(data.get("risk_tier")))}</span>
         <span class="badge">type: {html.escape(str(data.get("case_type")))}</span>
+        <span class="badge">阶段: {html.escape(lc_label)}</span>
       </div>
       <div class="gates">
         <div class="gate {gate_class(auth.get("needs_execution"))}">
@@ -466,7 +509,8 @@ def render_html(data: dict[str, Any]) -> str:
     </header>
 
     <div class="tabs">
-      <button type="button" class="tab-btn active" data-panel="panel-wizard">向导</button>
+      <button type="button" class="tab-btn" data-panel="panel-owner-next">下一步</button>
+      <button type="button" class="tab-btn" data-panel="panel-wizard">向导</button>
       <button type="button" class="tab-btn" data-panel="panel-court">法庭</button>
       <button type="button" class="tab-btn" data-panel="panel-chain">链路</button>
       <button type="button" class="tab-btn" data-panel="panel-debate">讨论</button>
@@ -474,7 +518,9 @@ def render_html(data: dict[str, Any]) -> str:
       <button type="button" class="tab-btn" data-panel="panel-more">更多</button>
     </div>
 
+    {owner_html}
     {wizard_html}
+    {court_html}
 
     <section id="panel-chain" class="tab-panel">
       <h2>可审计链路</h2>
@@ -523,6 +569,7 @@ def render_case(case_dir: Path, force: bool) -> Path:
         raise FileExistsError(f"{out} exists; pass --force to overwrite")
     out.parent.mkdir(parents=True, exist_ok=True)
     data = build_case_data(case_dir)
+    sync_case_todo(case_dir, data.get("lifecycle") or {})
     out.write_text(render_html(data), encoding="utf-8")
     return out
 
@@ -537,6 +584,8 @@ def render_index(roots: list[Path], force: bool) -> Path:
             if not case_dir.is_dir() or case_dir.name.startswith("."):
                 continue
             intake = parse_frontmatter(case_dir / "01_case_intake.md")
+            decision = parse_frontmatter(case_dir / "07_orchestrator_decision.md")
+            lc = derive_owner_lifecycle(case_dir)
             dash = case_dir / "artifacts" / "CASE_DASHBOARD.html"
             link = rel_from_cases_index(case_dir) if dash.is_file() else ""
             rows.append(
@@ -546,6 +595,17 @@ def render_index(roots: list[Path], force: bool) -> Path:
                     "status": str(intake.get("status", "—")),
                     "topic": str(intake.get("topic", ""))[:80],
                     "link": link,
+                    "lifecycle": lc.get("lifecycle", ""),
+                    "lifecycle_label": LIFECYCLE_LABELS.get(lc.get("lifecycle", ""), ""),
+                    "mtime": lc.get("mtime", ""),
+                    "needs_execution": str(
+                        decision.get("needs_execution", intake.get("needs_execution", "—"))
+                    ),
+                    "execution_authorized": str(
+                        decision.get(
+                            "execution_authorized", intake.get("execution_authorized", "—")
+                        )
+                    ),
                 }
             )
 
@@ -559,7 +619,10 @@ def render_index(roots: list[Path], force: bool) -> Path:
         body_rows.append(
             f"<tr><td>{html.escape(row['bucket'])}</td>"
             f"<td><code>{html.escape(row['case_id'])}</code></td>"
+            f"<td><span class='lc'>{html.escape(row['lifecycle_label'])}</span></td>"
             f"<td>{html.escape(row['status'])}</td>"
+            f"<td class='muted'>{html.escape(row['needs_execution'])} / {html.escape(row['execution_authorized'])}</td>"
+            f"<td>{html.escape(row['mtime'])}</td>"
             f"<td>{html.escape(row['topic'])}</td><td>{link_cell}</td></tr>"
         )
 
@@ -570,18 +633,26 @@ def render_index(roots: list[Path], force: bool) -> Path:
   <title>Harness Cases Index</title>
   <style>
     body {{ font-family: system-ui, sans-serif; background: #0f1419; color: #e7ecf3; padding: 24px; }}
-    table {{ width: 100%; border-collapse: collapse; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 0.9rem; }}
     th, td {{ border: 1px solid #2d3a4f; padding: 10px; text-align: left; }}
     th {{ color: #8b9cb3; }}
     a {{ color: #3d8bfd; }}
     .muted {{ color: #8b9cb3; }}
+    .lc {{ color: #3ecf8e; }}
+    .start-box {{ background: #1a2332; border: 1px solid #2d3a4f; padding: 14px; border-radius: 8px; margin-bottom: 20px; }}
+    code {{ font-size: 0.85rem; }}
   </style>
 </head>
 <body>
   <h1>Personal-Orchestrator Cases</h1>
-  <p class="muted">运行 <code>make dashboards</code> 刷新 · 交互：<code>make sop-console</code></p>
+  <div class="start-box">
+    <strong>新建案件（同一 topic 请用新目录，不要覆盖旧案）</strong>
+    <pre style="margin:8px 0 0;white-space:pre-wrap">make start TOPIC='你的 topic 原话' CASE_TYPE=career_direction RISK=high
+python3 scripts/fork_case.py cases/active/CASE-旧案 --slug=fork-v2</pre>
+  </div>
+  <p class="muted">运行 <code>make dashboards</code> 刷新 · 交互 <code>make sop-console</code> · 文档 <code>docs/OWNER_JOURNEY.md</code></p>
   <table>
-    <thead><tr><th>目录</th><th>case_id</th><th>status</th><th>topic</th><th>看板</th></tr></thead>
+    <thead><tr><th>目录</th><th>case_id</th><th>阶段</th><th>status</th><th>执行授权</th><th>更新</th><th>topic</th><th>看板</th></tr></thead>
     <tbody>{"".join(body_rows)}</tbody>
   </table>
 </body>

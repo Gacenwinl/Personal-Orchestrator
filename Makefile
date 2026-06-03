@@ -1,5 +1,5 @@
 .PHONY: smoke dashboard dashboards sop-console court-launch \
-        court-run workflow work-order hermes-setup
+        court-run workflow work-order hermes-setup hermes-doctor start fork
 
 smoke:
 	python3 scripts/smoke_test.py
@@ -35,15 +35,22 @@ work-order:
 	@test -n "$(CASE)" || (echo "Usage: make work-order CASE=cases/active/CASE-xxx" && exit 1)
 	python3 scripts/build_work_order.py "$(CASE)"
 
+CASE_TYPE ?= career_direction
+RISK ?= high
+SLUG ?= fork
+
+start:
+	@test -n "$(TOPIC)" || (echo "Usage: make start TOPIC='你的 topic'" && exit 1)
+	python3 scripts/start_case.py "$(TOPIC)" --case-type $(CASE_TYPE) --risk-tier $(RISK)
+
+fork:
+	@test -n "$(FROM)" || (echo "Usage: make fork FROM=cases/active/CASE-xxx SLUG=fork" && exit 1)
+	python3 scripts/fork_case.py "$(FROM)" --slug $(SLUG)
+
+hermes-doctor:
+	python3 scripts/hermes_doctor.py
+
 hermes-setup:
-	@echo "=== Hermes Phase 5 Setup ==="
-	@echo "Run the following commands to create profiles and install the skill:"
-	@echo ""
-	@echo "  hermes profile create court-team"
-	@echo "  hermes profile create court-verify"
-	@echo "  hermes profile create court-synthesize"
-	@echo "  hermes skills install scripts/skills/harness-court-team --as court-team"
-	@echo "  hermes skills install scripts/skills/harness-court-team --as court-verify"
-	@echo "  hermes skills install scripts/skills/harness-court-team --as court-synthesize"
-	@echo ""
-	@echo "Ensure XIAOMI_API_KEY is set in ~/.openclaw/.env (shared with Hermes)."
+	bash scripts/hermes_bootstrap.sh
+	@echo "---"
+	python3 scripts/hermes_doctor.py

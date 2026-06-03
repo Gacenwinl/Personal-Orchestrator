@@ -28,6 +28,8 @@
 6. 团队定义见 [registry/teams/](registry/teams/)，输出结构见 [templates/04_team_verdict_block.md](templates/04_team_verdict_block.md)
 7. 结案前运行 `python3 scripts/validate_case.py cases/active/CASE-xxx`，确保可审计链路与授权状态通过机械检查
 
+**日常操作：** [docs/OWNER_JOURNEY.md](docs/OWNER_JOURNEY.md) + 案件看板（`make start` / `make dashboard`）。
+
 更完整的脚本化流程见 [docs/PHASE2_USAGE.md](docs/PHASE2_USAGE.md)。一页纸 SOP：[docs/SOP_ONE_PAGE.md](docs/SOP_ONE_PAGE.md)。
 
 **Phase 3（活跃案件 + 集成）：** 架构说明 [docs/PHASE3_ARCHITECTURE.md](docs/PHASE3_ARCHITECTURE.md)；当前审理中案件见 [cases/active/](cases/active/)。

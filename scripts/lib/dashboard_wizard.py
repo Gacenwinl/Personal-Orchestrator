@@ -9,7 +9,7 @@ from typing import Any
 SOP_API = "http://127.0.0.1:8765"
 
 
-def wizard_panel_html(wizard: dict[str, Any]) -> str:
+def wizard_panel_html(wizard: dict[str, Any], banner: str = "") -> str:
     step = wizard.get("current_step") or {}
     auth = wizard.get("auth") or {}
     prompt = html.escape(str(wizard.get("cursor_prompt", "")))
@@ -36,8 +36,9 @@ def wizard_panel_html(wizard: dict[str, Any]) -> str:
             )
 
     return f"""
-    <section id="panel-wizard" class="tab-panel active">
+    <section id="panel-wizard" class="tab-panel">
       <h2>交互向导</h2>
+      {banner}
       <p class="muted" id="sop-status">检测本机 SOP Console…</p>
       <div class="wizard-current">
         <span class="badge">当前步：{step_label}</span>
@@ -72,19 +73,15 @@ def wizard_panel_html(wizard: dict[str, Any]) -> str:
       </form>
       <pre id="api-log" class="api-log"></pre>
     </section>
-
-    <section id="panel-court" class="tab-panel">
-      <h2>法庭启动器</h2>
-      <p class="muted">每队单独 Cursor Session。生成：<code>make court-launch CASE=…</code></p>
-      <table><thead><tr><th>team_id</th><th>block</th><th>status</th></tr></thead>
-      <tbody>{court_rows or "<tr><td colspan='3' class='muted'>运行 court_launcher 或填写 02</td></tr>"}</tbody></table>
-      <p><a href="../artifacts/COURT_LAUNCH_PLAN.md">COURT_LAUNCH_PLAN.md</a></p>
-    </section>
 """
 
 
-def wizard_script(case_rel: str, wizard: dict[str, Any]) -> str:
-    payload = json.dumps({"case_dir": case_rel, "wizard": wizard}, ensure_ascii=False)
+def wizard_script(case_rel: str, wizard: dict[str, Any], lifecycle: dict[str, Any]) -> str:
+    payload = json.dumps(
+        {"case_dir": case_rel, "wizard": wizard, "lifecycle": lifecycle},
+        ensure_ascii=False,
+    )
+    default_tab = lifecycle.get("default_tab", "wizard")
     return f"""
 <script>
 (function() {{
@@ -123,14 +120,23 @@ def wizard_script(case_rel: str, wizard: dict[str, Any]) -> str:
     }}
   }}
 
+  function activateTab(panelId) {{
+    document.querySelectorAll(".tab-btn").forEach((b) => {{
+      b.classList.toggle("active", b.dataset.panel === panelId);
+    }});
+    document.querySelectorAll(".tab-panel").forEach((p) => {{
+      p.classList.toggle("active", p.id === panelId);
+    }});
+  }}
   document.querySelectorAll(".tab-btn").forEach((btn) => {{
+    btn.addEventListener("click", () => activateTab(btn.dataset.panel));
+  }});
+  document.querySelectorAll(".btn-copy-cmd").forEach((btn) => {{
     btn.addEventListener("click", () => {{
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById(btn.dataset.panel).classList.add("active");
+      navigator.clipboard.writeText(btn.dataset.cmd || "").then(() => log("已复制命令"));
     }});
   }});
+  activateTab(BOOT.lifecycle.default_tab || "{default_tab}");
 
   document.getElementById("btn-copy-prompt").addEventListener("click", () => {{
     navigator.clipboard.writeText(promptEl.value).then(() => log("已复制口令"));

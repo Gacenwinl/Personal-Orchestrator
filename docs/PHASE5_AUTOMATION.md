@@ -40,8 +40,9 @@
 ## 快速开始
 
 ```bash
-# 前提：make hermes-setup（创建 profiles + 安装 skill，只需运行一次）
-make hermes-setup
+# 前提：Hermes 就绪（只需一次）
+make hermes-doctor    # 检查
+make hermes-setup    # 自动 bootstrap + 再检查
 
 # 对一个已有案件，启动全自动工作流
 make workflow CASE=cases/active/CASE-xxx

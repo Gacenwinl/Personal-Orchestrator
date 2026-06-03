@@ -1,5 +1,7 @@
 # SOP 一页纸 — Personal-Orchestrator-Harness
 
+> **Owner 日常：** 优先 [OWNER_JOURNEY.md](OWNER_JOURNEY.md) + 看板，本文作命令索引。
+
 ## 角色
 
 | 角色 | 谁 | 做什么 |
@@ -27,15 +29,16 @@ flowchart TD
 
 | 目的 | 命令 |
 |------|------|
-| 新建案件 | `python3 scripts/new_case.py "topic" --case-type ... --prepare` |
-| 进度 | `python3 scripts/case_status.py cases/active/CASE-xxx` |
-| 校验 | `python3 scripts/validate_case.py cases/active/CASE-xxx` |
-| **案件看板（成品）** | `make dashboard CASE=cases/active/CASE-xxx` |
-| **交互 SOP Console** | `make sop-console`（本机 8765，看板向导写回） |
-| 法庭启动清单 | `make court-launch CASE=cases/active/CASE-xxx` |
-| 打开看板 | 浏览器打开 `cases/.../artifacts/CASE_DASHBOARD.html` |
-| 全部索引 | `make dashboards` → `cases/index.html` |
-| 交接 Hermes | `python3 scripts/render_handoff.py cases/active/CASE-xxx` |
+| **新案一键** | `make start TOPIC='…'` |
+| **同 topic 新目录** | `make fork FROM=cases/active/CASE-旧 SLUG=fork-v2` |
+| **案件看板** | `make dashboard CASE=cases/active/CASE-xxx` |
+| **索引** | `make dashboards` → `cases/index.html` |
+| **交互写回** | `make sop-console` |
+| **Hermes 体检** | `make hermes-doctor` / `make hermes-setup` |
+| **法庭手册** | `make court-launch CASE=…` |
+| **法庭自动** | `make court-run CASE=…` |
+| **六阶 daemon** | `make workflow CASE=…` |
+| 进度 / 校验 | `case_status.py` / `validate_case.py` |
 | 回归 | `make smoke` |
 
 ## 讨论过程写在哪？
@@ -58,3 +61,5 @@ flowchart TD
 - [PHASE2_USAGE.md](PHASE2_USAGE.md)
 - [PHASE3_ARCHITECTURE.md](PHASE3_ARCHITECTURE.md)
 - [PHASE4_INTERACTIVE_SOP.md](PHASE4_INTERACTIVE_SOP.md)
+- [PHASE5_AUTOMATION.md](PHASE5_AUTOMATION.md)
+- [OWNER_JOURNEY.md](OWNER_JOURNEY.md)

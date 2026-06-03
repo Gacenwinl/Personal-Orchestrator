@@ -5,19 +5,27 @@
   <title>Harness Cases Index</title>
   <style>
     body { font-family: system-ui, sans-serif; background: #0f1419; color: #e7ecf3; padding: 24px; }
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { border: 1px solid #2d3a4f; padding: 10px; text-align: left; }
     th { color: #8b9cb3; }
     a { color: #3d8bfd; }
     .muted { color: #8b9cb3; }
+    .lc { color: #3ecf8e; }
+    .start-box { background: #1a2332; border: 1px solid #2d3a4f; padding: 14px; border-radius: 8px; margin-bottom: 20px; }
+    code { font-size: 0.85rem; }
   </style>
 </head>
 <body>
   <h1>Personal-Orchestrator Cases</h1>
-  <p class="muted">运行 <code>python3 scripts/render_case_dashboard.py --index</code> 刷新</p>
+  <div class="start-box">
+    <strong>新建案件（同一 topic 请用新目录，不要覆盖旧案）</strong>
+    <pre style="margin:8px 0 0;white-space:pre-wrap">make start TOPIC='你的 topic 原话' CASE_TYPE=career_direction RISK=high
+python3 scripts/fork_case.py cases/active/CASE-旧案 --slug=fork-v2</pre>
+  </div>
+  <p class="muted">运行 <code>make dashboards</code> 刷新 · 交互 <code>make sop-console</code> · 文档 <code>docs/OWNER_JOURNEY.md</code></p>
   <table>
-    <thead><tr><th>目录</th><th>case_id</th><th>status</th><th>topic</th><th>看板</th></tr></thead>
-    <tbody><tr><td>active</td><td><code>CASE-20260603-mems-phase2-resume-jd-match</code></td><td>instruction_issued</td><td>在 CASE-001 Phase1 结论与 JD 池证据基础上，评估是否进入 Phase2（方向决策 / 简历与 JD 匹配深化）</td><td><a href="active/CASE-20260603-mems-phase2-resume-jd-match/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>active</td><td><code>CASE-20260603-msc-us-phd-agent-pi-outreach</code></td><td>orchestrator_decided</td><td>转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）</td><td><a href="active/CASE-20260603-msc-us-phd-agent-pi-outreach/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>samples</td><td><code>CASE-001-mems-career-direction</code></td><td>completed</td><td>是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集</td><td><a href="samples/CASE-001-mems-career-direction/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr></tbody>
+    <thead><tr><th>目录</th><th>case_id</th><th>阶段</th><th>status</th><th>执行授权</th><th>更新</th><th>topic</th><th>看板</th></tr></thead>
+    <tbody><tr><td>active</td><td><code>CASE-20260603-mems-phase2-resume-jd-match</code></td><td><span class='lc'>执行中</span></td><td>instruction_issued</td><td class='muted'>True / True</td><td>2026-06-03 09:53</td><td>在 CASE-001 Phase1 结论与 JD 池证据基础上，评估是否进入 Phase2（方向决策 / 简历与 JD 匹配深化）</td><td><a href="active/CASE-20260603-mems-phase2-resume-jd-match/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>active</td><td><code>CASE-20260603-msc-us-phd-agent-pi-outreach</code></td><td><span class='lc'>已完成</span></td><td>orchestrator_decided</td><td class='muted'>False / False</td><td>2026-06-03 10:03</td><td>转美路径分析：曼大 MSc Robotics → 美国全奖 PhD（AI agent 为方向选项；套瓷为手段之一）</td><td><a href="active/CASE-20260603-msc-us-phd-agent-pi-outreach/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>active</td><td><code>CASE-20260603-当前我本科安徽大学自动化专业-马上26-09要读曼彻斯特大学-msc-robotics-1y-在</code></td><td><span class='lc'>法庭进行中</span></td><td>draft</td><td class='muted'>True / False</td><td>2026-06-03 12:12</td><td>当前我本科安徽大学自动化专业，马上26.09要读曼彻斯特大学 msc robotics 1y，在 msc 期间我想找华人 ap 套瓷做 ai agent 相关的</td><td><a href="active/CASE-20260603-当前我本科安徽大学自动化专业-马上26-09要读曼彻斯特大学-msc-robotics-1y-在/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr><tr><td>samples</td><td><code>CASE-001-mems-career-direction</code></td><td><span class='lc'>已完成</span></td><td>completed</td><td class='muted'>True / True</td><td>2026-06-03 09:03</td><td>是否主攻 MEMS/封装/仿真求职方向；是否授权 Phase1 JD 收集</td><td><a href="samples/CASE-001-mems-career-direction/artifacts/CASE_DASHBOARD.html">Dashboard</a></td></tr></tbody>
   </table>
 </body>
 </html>
